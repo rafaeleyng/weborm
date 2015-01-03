@@ -7,11 +7,7 @@ var schema = {
 		attrs: 		['id'],
 	}, 
 
-	// entities:
-	Question: { 
-		attrs: 		['text'],
-	},
-	
+	// entities:	
 	Country: { 
 		attrs: 		['name', 'abbr'],
 	}, 
@@ -24,66 +20,17 @@ var schema = {
 	City:	{ 
 		attrs: 		['name'], 
 		relsToOne: 	['State'],
-	},
-
-	Address: { 
-		attrs: 		['street', 'number', 'district', 'complement', 'zip'], 
-		relsToOne:  ['City'],
-	},
-
-	Seller: { 
-		attrs: 		['name'], 
-		relsToOne: 	['Customer'],
-	},
-
-	Customer: { 
-		attrs: 		['name', 'registry', 'phone'], 
-		relsToOne: 	['Address', 'CustomerType', 'CustomerCategory'],
-		relsToMany: ['Quadrant','Segment'],
-	},
-
-	Visit: { 
-		attrs: 		['date', 'observations', 'status'], 
-		relsToOne: 	['Customer', 'Seller', 'Loss'],
-	},
-
-	Loss: {
-		attrs: 		['date', 'quantity', 'observations'],
-		relsToOne:  ['LossReason'],
-	},
-
-	LossReason: {
-		attrs: 		['text'],
-	},
-
-	// types, categories, status etc
-	CustomerType: { 
-		attrs: 		['name'], 
-	},
-
-	CustomerCategory: { 
-		attrs: 		['name'], 
-	},
-
-	Segment: {
-		attrs: 		['name'],
-	},
-
-	Quadrant: {
-		attrs: 		['name', 'abbr'],
-	},
+	}
 };
 
-var modelJSConfig = {
+var config = {
 	base: '_Base',
-
-	storage: storages.localStorage,
-	
-	pluralization: {
+	storage: 'localStorage', // 'localStorage' is the default, no need to pass it
+	pluralization: { // everything that is not pluralized just by adding an 's'
 		Country: 'Countries',
 		City: 'Cities',
 		Address: 'Addresses',
-	},
+	}
 };
 
-var model = new ModelJS(schema, modelJSConfig);
+var modelJS = new ModelJS(schema, config);

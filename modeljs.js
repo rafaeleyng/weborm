@@ -1,127 +1,130 @@
 'use strict';
 
-/*
-  LocalStorage
-*/
-var LocalStorage = {};
-LocalStorage._helpers = {};
+var ModelJS = function(schema, config) {
 
-////////////////////////////////////////////////////////////////////////
-// CRUD
-// read
-LocalStorage.count = function(entity) {
-  return LocalStorage._getRoster(entity).length;
-}
-LocalStorage.find = function(entity, id) {
-  var key = LocalStorage._helpers.genKey(entity, id);
-  var stringData = localStorage.getItem(key);
-  if (!stringData) {
-    return undefined;
-  }
-  return JSON.parse(stringData);
-};
-LocalStorage.first = function(entity) {
-  if (LocalStorage.count(entity) === 0) {
-    return undefined;
-  }
-  var roster = LocalStorage._getRoster(entity);
-  var firstId = roster[0];
-  return LocalStorage.find(entity, firstId);
-};
-LocalStorage.all = function(entity) {
-  var roster = LocalStorage._getRoster(entity);
-  var objects = [];
-  for (var i in roster) {
-    var id = roster[i];
-    objects.push(LocalStorage.find(entity, id));
-  }
-  return objects; 
-};
-LocalStorage.page = function(entity, pageNumber, pageSize) {
-  var offset = pageSize * pageNumber;
-  if (offset >= LocalStorage.count(entity)) {
-    return [];
-  }
-  var roster = LocalStorage._getRoster(entity);
-  var pageIds = roster.slice(offset, offset+pageSize);
+  ////////////////////////////////////////////////////////////////////////
+  /*
+    LocalStorage
+  */
+  var LocalStorage = {};
+  LocalStorage._helpers = {};
 
-  var objects = [];
-  for (var i in pageIds) {
-    var id = pageIds[i];
-    objects.push(LocalStorage.find(entity, id));
+  ////////////////////////////////////////////////////////////////////////
+  // CRUD
+  // read
+  LocalStorage.count = function(entity) {
+    return LocalStorage._getRoster(entity).length;
   }
-  return objects;
-};
-LocalStorage.filter = function(entity, filters) {
-  return LocalStorage.all(entity).filter(filters);
-}
-
-// create / update
-LocalStorage.save = function(entity, object) {
-  var objectId = object.id;
-  var key = LocalStorage._helpers.genKey(entity, objectId);
-  var isAdding = localStorage.getItem(key) === null;
-
-  // add the id to entity roster, if is a new record
-  if (isAdding) {
+  LocalStorage.find = function(entity, id) {
+    var key = LocalStorage._helpers.genKey(entity, id);
+    var stringData = localStorage.getItem(key);
+    if (!stringData) {
+      return undefined;
+    }
+    return JSON.parse(stringData);
+  };
+  LocalStorage.first = function(entity) {
+    if (LocalStorage.count(entity) === 0) {
+      return undefined;
+    }
     var roster = LocalStorage._getRoster(entity);
-    var location = LocalStorage._helpers.locationOf(objectId, roster);
+    var firstId = roster[0];
+    return LocalStorage.find(entity, firstId);
+  };
+  LocalStorage.all = function(entity) {
+    var roster = LocalStorage._getRoster(entity);
+    var objects = [];
+    for (var i in roster) {
+      var id = roster[i];
+      objects.push(LocalStorage.find(entity, id));
+    }
+    return objects; 
+  };
+  LocalStorage.page = function(entity, pageNumber, pageSize) {
+    var offset = pageSize * pageNumber;
+    if (offset >= LocalStorage.count(entity)) {
+      return [];
+    }
+    var roster = LocalStorage._getRoster(entity);
+    var pageIds = roster.slice(offset, offset+pageSize);
+
+    var objects = [];
+    for (var i in pageIds) {
+      var id = pageIds[i];
+      objects.push(LocalStorage.find(entity, id));
+    }
+    return objects;
+  };
+  LocalStorage.filter = function(entity, filters) {
+    return LocalStorage.all(entity).filter(filters);
+  }
+
+  // create / update
+  LocalStorage.save = function(entity, object) {
+    var objectId = object.id;
+    var key = LocalStorage._helpers.genKey(entity, objectId);
+    var isAdding = localStorage.getItem(key) === null;
+
+    // add the id to entity roster, if is a new record
+    if (isAdding) {
+      var roster = LocalStorage._getRoster(entity);
+      var location = LocalStorage._helpers.locationOf(objectId, roster);
+      if (!location.found) {
+        roster.splice(location.location, 0, objectId);      
+        LocalStorage._saveRoster(entity, roster);
+      } 
+    }
+
+    // add or replace the individual record
+    localStorage.setItem(key, JSON.stringify(object));
+  };
+
+  // delete
+  LocalStorage.delete = function(entity, id) {
+    var key = LocalStorage._helpers.genKey(entity, id);
+    
+    var roster = LocalStorage._getRoster(entity);
+    var location = LocalStorage._helpers.locationOf(id, roster);
     if (!location.found) {
-      roster.splice(location.location, 0, objectId);      
-      LocalStorage._saveRoster(entity, roster);
-    } 
-  }
+      return false;
+    }
+    // remove id from roster
+    roster.splice(location.location, 1);
+    LocalStorage._saveRoster(entity, roster);
 
-  // add or replace the individual record
-  localStorage.setItem(key, JSON.stringify(object));
-};
+    // remove the individual record
+    localStorage.removeItem(key);
+    return true;
+  };
 
-// delete
-LocalStorage.delete = function(entity, id) {
-  var key = LocalStorage._helpers.genKey(entity, id);
-  
-  var roster = LocalStorage._getRoster(entity);
-  var location = LocalStorage._helpers.locationOf(id, roster);
-  if (!location.found) {
-    return false;
-  }
-  // remove id from roster
-  roster.splice(location.location, 1);
-  LocalStorage._saveRoster(entity, roster);
-
-  // remove the individual record
-  localStorage.removeItem(key);
-  return true;
-};
-
-////////////////////////////////////////////////////////////////////////
-// ROSTER - roster is an ordered array of all ids of an entity
-LocalStorage._getRoster = function(entity) {
-  var rosterString = localStorage.getItem(entity);
-  if (rosterString) {
-    return JSON.parse(rosterString);
-  } else {
-    return [];
-  }
-};
-LocalStorage._saveRoster = function(entity, roster) {
-  localStorage.setItem(entity, JSON.stringify(roster));
-};
-LocalStorage.genId = function(entity) {
-  var roster = LocalStorage._getRoster(entity);
-  var lastId = roster[roster.length-1];
-  if (lastId === undefined) {
-    return 1;
-  }
-  return lastId + 1;
-};
-////////////////////////////////////////////////////////////////////////
-// HELPERS
-LocalStorage._helpers.genKey = function(entity, id) {
-  return entity + '_' + id;
-};
-// binary search - return the index where to insert (when adding) or the index to delete (when deleting)
-LocalStorage._helpers.locationOf = function(elt, array) {
+  ////////////////////////////////////////////////////////////////////////
+  // ROSTER - roster is an ordered array of all ids of an entity
+  LocalStorage._getRoster = function(entity) {
+    var rosterString = localStorage.getItem(entity);
+    if (rosterString) {
+      return JSON.parse(rosterString);
+    } else {
+      return [];
+    }
+  };
+  LocalStorage._saveRoster = function(entity, roster) {
+    localStorage.setItem(entity, JSON.stringify(roster));
+  };
+  LocalStorage.genId = function(entity) {
+    var roster = LocalStorage._getRoster(entity);
+    var lastId = roster[roster.length-1];
+    if (lastId === undefined) {
+      return 1;
+    }
+    return lastId + 1;
+  };
+  ////////////////////////////////////////////////////////////////////////
+  // HELPERS
+  LocalStorage._helpers.genKey = function(entity, id) {
+    return entity + '_' + id;
+  };
+  // binary search - return the index where to insert (when adding) or the index to delete (when deleting)
+  LocalStorage._helpers.locationOf = function(elt, array) {
     var low = 0;
     var high = array.length-1;
     var mid = 0;
@@ -146,45 +149,46 @@ LocalStorage._helpers.locationOf = function(elt, array) {
       mid++;
     }
     return {found: false, location: mid};
-}
+  }
 
-/*
-  Storages
-*/
-var storages = {
-  localStorage: 'localStorage',
-  webSQL: 'webSQL', // not supported yet
-  indexedDB: 'indexedDB', // not supported yet
+  ////////////////////////////////////////////////////////////////////////
+  /*
+    Storages
+  */
+  var storages = {
+    localStorage: 'localStorage',
+    webSQL: 'webSQL', // not supported yet
+    indexedDB: 'indexedDB', // not supported yet
+    defaultStorage: LocalStorage,
 
-  storage: function(storage) {
-    if (storage === this.localStorage) {
-      return LocalStorage;
-    }
-    // TODO
-    if (storage === this.webSQL) {
-      return ''; 
-    }
-    // TODO
-    if (storage === this.indexedDB) {
-      return '';
+    storage: function(storage) {
+      if (storage === this.localStorage) {
+        return LocalStorage;
+      }
+      // TODO
+      if (storage === this.webSQL) {
+        return ''; 
+      }
+      // TODO
+      if (storage === this.indexedDB) {
+        return '';
+      }
+      return this.defaultStorage;
     }
   }
-}
 
-/*
-  ModelJs
-*/
-var ModelJS = function(schema, config) {
-
+  ////////////////////////////////////////////////////////////////////////
+  /*
+    ModelJS
+  */
   var modelJSReference = this;
   this.schema = schema;
   this.Entity = {};
 
-  // var storages = storages;
   ////////////////////////////////////////////////////////////////////////
   // CONFIG
   // default config
-  // every acepted configuration must be different that undefined inside this.config
+  // every accepted configuration must be different that undefined inside this.config
   this.config = {
     base: '_Base',
     storage: storages.localStorage,
@@ -531,7 +535,6 @@ var ModelJS = function(schema, config) {
     },
 
   };
-
 
   ////////////////////////////////////////////////////////////////////////
   // RELATIONSHIPS
