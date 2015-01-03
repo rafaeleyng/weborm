@@ -24,12 +24,11 @@ var schema = {
 };
 
 var config = {
-	base: '_Base',
+	base: '_Base', // '_Base' is the default base entity from which all entities inherit, no need to pass it
 	storage: 'localStorage', // 'localStorage' is the default, no need to pass it
 	pluralization: { // everything that is not pluralized just by adding an 's'
 		Country: 'Countries',
-		City: 'Cities',
-		Address: 'Addresses',
+		City: 'Cities'
 	}
 };
 

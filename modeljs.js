@@ -222,13 +222,14 @@ var ModelJS = function(schema, config) {
     }
     (function(ent) {
       modelJSReference.Entity[ent] =  function(data) { 
-        modelJSReference.Entity[modelJSReference.config.base].call(this, data, ent)};
+        modelJSReference.Entity[modelJSReference.config.base].call(this, data, ent)
+      };
     })(entity);
   }
 
   ////////////////////////////////////////////////////////////////////////
   // CONTEXT
-  // holds ModelJS objects (not plain data objects)
+  // holds ModelJS objects (not plain JS objects)
   this.context = {};
 
   this._getFromContext = function(entity, data) {
