@@ -2,6 +2,8 @@
 
 var ModelJS = function(schema, config) {
 
+  var ID = 'id';
+
   ////////////////////////////////////////////////////////////////////////
   /*
     LocalStorage
@@ -314,8 +316,7 @@ var ModelJS = function(schema, config) {
       return savedObjects;
     } else {
       if (!filteredData.id) {
-        var id = this._genId(entity);
-        Object.defineProperty(filteredData, 'id', {value: id, writable: false, enumerable: true});
+        filteredData.id = this._genId(entity);
       }
       return this._save(entity, filteredData);
     }
