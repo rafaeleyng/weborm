@@ -131,18 +131,18 @@ var ModelJS = function(schema, config) {
     var midElt = elt;
     var iterations = 0;
     while (low <= high) {
-        iterations++;
-        mid = (low + high) / 2 | 0;
-        midElt = array[mid];
-        if (elt == midElt) {
-           return {found: true, location: mid};
-        }
-        if (elt > midElt) {
-          low = mid + 1;
-        }
-        else {
-          high = mid - 1;
-        }
+      iterations++;
+      mid = (low + high) / 2 | 0;
+      midElt = array[mid];
+      if (elt == midElt) {
+         return {found: true, location: mid};
+      }
+      if (elt > midElt) {
+        low = mid + 1;
+      }
+      else {
+        high = mid - 1;
+      }
     }
 
     if (elt > midElt) {
@@ -406,7 +406,7 @@ var ModelJS = function(schema, config) {
       return value;
     }
     return [value];
-  }
+  };
   this._lcFirst = function(str) {
     return str.substr(0,1).toLowerCase() + str.substr(1, str.length);
   };
