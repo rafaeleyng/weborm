@@ -1,5 +1,5 @@
 # ModelJS
 
-A library for handling client-side storage in a kind of relational way.
+A library for handling JavaScript client-side storage in a ORM fashion.
 
 This software is licensed under the MIT License.
