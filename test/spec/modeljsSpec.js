@@ -54,9 +54,8 @@ describe('ModelJS', function() {
   });
 
   it('should save to/read from client storage', function() {
-    // var id = 1;
-    modelJS.save('Country', { name: 'country'});
-    expect(modelJS.find('Country', 1)).toBeDefined();
+    var savedObject = modelJS.save('Country', { name: 'country'});
+    expect(modelJS.find('Country', savedObject.id)).toBeDefined();
   });
 
   it('should not find object with invalid id', function() {
