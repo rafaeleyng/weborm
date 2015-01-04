@@ -248,9 +248,7 @@ var ModelJS = function(schema, config) {
   };
   // returns one or an array of ModelJS objects with the correct entity type
   this.new = function(entity, data) {
-    if (data === undefined) {
-      data = {};
-    }
+    data = data || {};
     if (this._isCollection(data)) {
       var objects = [];
       for (var i in data) {     
@@ -437,7 +435,7 @@ var ModelJS = function(schema, config) {
     } else {
       var filteredObject = {};
       for (var prop in dirtyData) {
-        if (entitySchema.indexOf(prop) > -1) {
+        if (entitySchema.indexOf(prop) !== -1) {
           filteredObject[prop] = dirtyData[prop];
         }
       }

@@ -40,23 +40,23 @@ describe('ModelJS', function() {
   });
 
   it('should be defined', function() {
-    expect(modelJS).not.toBeUndefined();
+    expect(modelJS).toBeDefined();
   });
 
   it('should create new object', function() {
     var country = modelJS.new('Country', {name: 'country'});
-    expect(country).not.toBeUndefined();
+    expect(country).toBeDefined();
   });
 
   it('should generate an id to a new object', function() {
     var country = modelJS.save('Country', {name: 'country'});
-    expect(country.id).not.toBeUndefined();
+    expect(country.id).toBeDefined();
   });
 
   it('should save to/read from client storage', function() {
     // var id = 1;
     modelJS.save('Country', { name: 'country'});
-    expect(modelJS.find('Country', 1)).not.toBeUndefined();
+    expect(modelJS.find('Country', 1)).toBeDefined();
   });
 
   it('should not find object with invalid id', function() {
@@ -67,7 +67,7 @@ describe('ModelJS', function() {
   it('shouldn\'t allow to change the id', function() {
     var country = modelJS.save('Country', {name: 'country'});
     var id = country.id;
-    expect(id).not.toBeUndefined();
+    expect(id).toBeDefined();
     country.id = -1;
     expect(country.id).toEqual(id);
   });
