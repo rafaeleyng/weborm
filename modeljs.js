@@ -6,175 +6,173 @@ var ModelJS = function(schema, config) {
   /*
     LocalStorage
   */
-  var LocalStorage = {};
-  LocalStorage._helpers = {};
+  var LocalStorage = function LocalStorage() {
+    this.clean = function() {
+      for (var key in localStorage) {
+        localStorage.removeItem(key);
+      }
+    };
+    ////////////////////////////////////////////////////////////////////////
+    // CRUD
+    // read
+    this.count = function(entity) {
+      return this._getIndex(entity).length;
+    };
+    this.find = function(entity, id) {
+      var key = this._helpers.genKey(entity, id);
+      var stringData = localStorage.getItem(key);
+      if (!stringData) {
+        return undefined;
+      }
+      return JSON.parse(stringData);
+    };
+    this.first = function(entity) {
+      if (this.count(entity) === 0) {
+        return undefined;
+      }
+      var index = this._getIndex(entity);
+      var firstId = index[0];
+      return this.find(entity, firstId);
+    };
+    this.all = function(entity) {
+      var index = this._getIndex(entity);
+      var objects = [];
+      for (var i in index) {
+        var id = index[i];
+        objects.push(this.find(entity, id));
+      }
+      return objects; 
+    };
+    this.page = function(entity, pageNumber, pageSize) {
+      var offset = pageSize * pageNumber;
+      if (offset >= this.count(entity)) {
+        return [];
+      }
+      var index = this._getIndex(entity);
+      var pageIds = index.slice(offset, offset+pageSize);
 
-  ////////////////////////////////////////////////////////////////////////
-  // CRUD
-  // read
-  LocalStorage.count = function(entity) {
-    return LocalStorage._getIndex(entity).length;
-  }
-  LocalStorage.find = function(entity, id) {
-    var key = LocalStorage._helpers.genKey(entity, id);
-    var stringData = localStorage.getItem(key);
-    if (!stringData) {
-      return undefined;
-    }
-    return JSON.parse(stringData);
-  };
-  LocalStorage.first = function(entity) {
-    if (LocalStorage.count(entity) === 0) {
-      return undefined;
-    }
-    var index = LocalStorage._getIndex(entity);
-    var firstId = index[0];
-    return LocalStorage.find(entity, firstId);
-  };
-  LocalStorage.all = function(entity) {
-    var index = LocalStorage._getIndex(entity);
-    var objects = [];
-    for (var i in index) {
-      var id = index[i];
-      objects.push(LocalStorage.find(entity, id));
-    }
-    return objects; 
-  };
-  LocalStorage.page = function(entity, pageNumber, pageSize) {
-    var offset = pageSize * pageNumber;
-    if (offset >= LocalStorage.count(entity)) {
-      return [];
-    }
-    var index = LocalStorage._getIndex(entity);
-    var pageIds = index.slice(offset, offset+pageSize);
+      var objects = [];
+      for (var i in pageIds) {
+        var id = pageIds[i];
+        objects.push(this.find(entity, id));
+      }
+      return objects;
+    };
+    this.filter = function(entity, filters) {
+      return this.all(entity).filter(filters);
+    };
+    // create / update
+    this.save = function(entity, object) {
+      var objectId = object.id;
+      var key = this._helpers.genKey(entity, objectId);
+      var isAdding = localStorage.getItem(key) === null;
 
-    var objects = [];
-    for (var i in pageIds) {
-      var id = pageIds[i];
-      objects.push(LocalStorage.find(entity, id));
-    }
-    return objects;
-  };
-  LocalStorage.filter = function(entity, filters) {
-    return LocalStorage.all(entity).filter(filters);
-  }
+      // add the id to entity index, if is a new record
+      if (isAdding) {
+        var index = this._getIndex(entity);
+        var location = this._helpers.locationOf(objectId, index);
+        if (!location.found) {
+          index.splice(location.location, 0, objectId);      
+          this._saveIndex(entity, index);
+        } 
+      }
 
-  // create / update
-  LocalStorage.save = function(entity, object) {
-    var objectId = object.id;
-    var key = LocalStorage._helpers.genKey(entity, objectId);
-    var isAdding = localStorage.getItem(key) === null;
+      // add or replace the individual record
+      localStorage.setItem(key, JSON.stringify(object));
+    };
 
-    // add the id to entity index, if is a new record
-    if (isAdding) {
-      var index = LocalStorage._getIndex(entity);
-      var location = LocalStorage._helpers.locationOf(objectId, index);
+    // delete
+    this.delete = function(entity, id) {
+      var key = this._helpers.genKey(entity, id);
+      
+      var index = this._getIndex(entity);
+      var location = this._helpers.locationOf(id, index);
       if (!location.found) {
-        index.splice(location.location, 0, objectId);      
-        LocalStorage._saveIndex(entity, index);
-      } 
-    }
-
-    // add or replace the individual record
-    localStorage.setItem(key, JSON.stringify(object));
-  };
-
-  // delete
-  LocalStorage.delete = function(entity, id) {
-    var key = LocalStorage._helpers.genKey(entity, id);
-    
-    var index = LocalStorage._getIndex(entity);
-    var location = LocalStorage._helpers.locationOf(id, index);
-    if (!location.found) {
-      return false;
-    }
-    // remove id from index
-    index.splice(location.location, 1);
-    LocalStorage._saveIndex(entity, index);
-
-    // remove the individual record
-    localStorage.removeItem(key);
-    return true;
-  };
-
-  ////////////////////////////////////////////////////////////////////////
-  // ROSTER - index is an ordered array of all ids of an entity
-  LocalStorage._getIndex = function(entity) {
-    var indexString = localStorage.getItem(entity);
-    if (indexString) {
-      return JSON.parse(indexString);
-    } else {
-      return [];
-    }
-  };
-  LocalStorage._saveIndex = function(entity, index) {
-    localStorage.setItem(entity, JSON.stringify(index));
-  };
-  LocalStorage.genId = function(entity) {
-    var index = LocalStorage._getIndex(entity);
-    var lastId = index[index.length-1];
-    if (lastId === undefined) {
-      return 1;
-    }
-    return lastId + 1;
-  };
-  ////////////////////////////////////////////////////////////////////////
-  // HELPERS
-  LocalStorage._helpers.genKey = function(entity, id) {
-    return entity + '_' + id;
-  };
-  // binary search - return the index where to insert (when adding) or the index to delete (when deleting)
-  LocalStorage._helpers.locationOf = function(elt, array) {
-    var low = 0;
-    var high = array.length-1;
-    var mid = 0;
-    var midElt = elt;
-    var iterations = 0;
-    while (low <= high) {
-      iterations++;
-      mid = (low + high) / 2 | 0;
-      midElt = array[mid];
-      if (elt == midElt) {
-         return {found: true, location: mid};
+        return false;
       }
+      // remove id from index
+      index.splice(location.location, 1);
+      this._saveIndex(entity, index);
+
+      // remove the individual record
+      localStorage.removeItem(key);
+      return true;
+    };
+
+    ////////////////////////////////////////////////////////////////////////
+    // Index - index is an ordered array of all ids of an entity
+    this._getIndex = function(entity) {
+      var indexString = localStorage.getItem(entity);
+      if (indexString) {
+        return JSON.parse(indexString);
+      } else {
+        return [];
+      }
+    };
+    this._saveIndex = function(entity, index) {
+      localStorage.setItem(entity, JSON.stringify(index));
+    };
+    this.genId = function(entity) {
+      var index = this._getIndex(entity);
+      var lastId = index[index.length-1];
+      if (lastId === undefined) {
+        return 1;
+      }
+      return lastId + 1;
+    };
+    ////////////////////////////////////////////////////////////////////////
+    // HELPERS
+    this._helpers = {};
+    this._helpers.genKey = function(entity, id) {
+      return entity + '_' + id;
+    };
+    // binary search - return the index where to insert (when adding) or the index to delete (when deleting)
+    this._helpers.locationOf = function(elt, array) {
+      var low = 0;
+      var high = array.length-1;
+      var mid = 0;
+      var midElt = elt;
+      var iterations = 0;
+      while (low <= high) {
+        iterations++;
+        mid = (low + high) / 2 | 0;
+        midElt = array[mid];
+        if (elt == midElt) {
+           return {found: true, location: mid};
+        }
+        if (elt > midElt) {
+          low = mid + 1;
+        }
+        else {
+          high = mid - 1;
+        }
+      }
+
       if (elt > midElt) {
-        low = mid + 1;
+        mid++;
       }
-      else {
-        high = mid - 1;
-      }
-    }
-
-    if (elt > midElt) {
-      mid++;
-    }
-    return {found: false, location: mid};
-  }
+      return {found: false, location: mid};
+    };   
+  };
 
   ////////////////////////////////////////////////////////////////////////
   /*
-    Storages
+    Get storages
   */
-  var storages = {
-    localStorage: 'localStorage',
-    webSQL: 'webSQL', // not supported yet
-    indexedDB: 'indexedDB', // not supported yet
-    defaultStorage: LocalStorage,
-
-    storage: function(storage) {
-      if (storage === this.localStorage) {
-        return LocalStorage;
-      }
-      // TODO
-      if (storage === this.webSQL) {
-        return ''; 
-      }
-      // TODO
-      if (storage === this.indexedDB) {
-        return '';
-      }
-      return this.defaultStorage;
+  var getStorage = function(storageName) {
+    var defaultStorage = LocalStorage;
+    if (storageName === 'localStorage') {
+      return LocalStorage;
     }
+    // TODO
+    if (storageName === 'webSQL') {
+      return undefined;
+    }
+    // TODO
+    if (storageName === 'indexedDB') {
+      return undefined;
+    }
+    return defaultStorage;
   }
 
   ////////////////////////////////////////////////////////////////////////
@@ -191,7 +189,7 @@ var ModelJS = function(schema, config) {
   // every accepted configuration must be different that undefined inside this.config
   this.config = {
     base: '_Base',
-    storage: storages.localStorage,
+    storage: 'localStorage',
     pluralization: {},
   };
   // using user-defined configs
@@ -200,8 +198,8 @@ var ModelJS = function(schema, config) {
       this.config[param] = config[param];
     }
   }
-
-  this.storage = storages.storage(this.config.storage);
+  var storageConstructor = getStorage(this.config.storage);
+  this.storage = new storageConstructor();
 
   ////////////////////////////////////////////////////////////////////////
   // CONSTRUCTORS

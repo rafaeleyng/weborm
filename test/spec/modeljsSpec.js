@@ -1,6 +1,7 @@
 describe('ModelJS', function() {
 
   var modelJS;
+  var storage;
   var schema = {
     _Base: { 
       attrs: ['id'],
@@ -24,19 +25,14 @@ describe('ModelJS', function() {
     }
   };
 
-  var cleanLocalStorage = function cleanLocalStorage() {
-    for (var key in localStorage) {
-      localStorage.removeItem(key);
-    }
-  };
-
   beforeEach(function() {
-    cleanLocalStorage();
     modelJS = new ModelJS(schema, config);
+    storage = modelJS.storage;
+    storage.clean();
   });
 
   afterAll(function() {
-    cleanLocalStorage();
+    storage.clean();
   });
 
   it('should be defined', function() {
