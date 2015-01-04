@@ -13,7 +13,7 @@ var ModelJS = function(schema, config) {
   // CRUD
   // read
   LocalStorage.count = function(entity) {
-    return LocalStorage._getRoster(entity).length;
+    return LocalStorage._getIndex(entity).length;
   }
   LocalStorage.find = function(entity, id) {
     var key = LocalStorage._helpers.genKey(entity, id);
@@ -27,15 +27,15 @@ var ModelJS = function(schema, config) {
     if (LocalStorage.count(entity) === 0) {
       return undefined;
     }
-    var roster = LocalStorage._getRoster(entity);
-    var firstId = roster[0];
+    var index = LocalStorage._getIndex(entity);
+    var firstId = index[0];
     return LocalStorage.find(entity, firstId);
   };
   LocalStorage.all = function(entity) {
-    var roster = LocalStorage._getRoster(entity);
+    var index = LocalStorage._getIndex(entity);
     var objects = [];
-    for (var i in roster) {
-      var id = roster[i];
+    for (var i in index) {
+      var id = index[i];
       objects.push(LocalStorage.find(entity, id));
     }
     return objects; 
@@ -45,8 +45,8 @@ var ModelJS = function(schema, config) {
     if (offset >= LocalStorage.count(entity)) {
       return [];
     }
-    var roster = LocalStorage._getRoster(entity);
-    var pageIds = roster.slice(offset, offset+pageSize);
+    var index = LocalStorage._getIndex(entity);
+    var pageIds = index.slice(offset, offset+pageSize);
 
     var objects = [];
     for (var i in pageIds) {
@@ -65,13 +65,13 @@ var ModelJS = function(schema, config) {
     var key = LocalStorage._helpers.genKey(entity, objectId);
     var isAdding = localStorage.getItem(key) === null;
 
-    // add the id to entity roster, if is a new record
+    // add the id to entity index, if is a new record
     if (isAdding) {
-      var roster = LocalStorage._getRoster(entity);
-      var location = LocalStorage._helpers.locationOf(objectId, roster);
+      var index = LocalStorage._getIndex(entity);
+      var location = LocalStorage._helpers.locationOf(objectId, index);
       if (!location.found) {
-        roster.splice(location.location, 0, objectId);      
-        LocalStorage._saveRoster(entity, roster);
+        index.splice(location.location, 0, objectId);      
+        LocalStorage._saveIndex(entity, index);
       } 
     }
 
@@ -83,14 +83,14 @@ var ModelJS = function(schema, config) {
   LocalStorage.delete = function(entity, id) {
     var key = LocalStorage._helpers.genKey(entity, id);
     
-    var roster = LocalStorage._getRoster(entity);
-    var location = LocalStorage._helpers.locationOf(id, roster);
+    var index = LocalStorage._getIndex(entity);
+    var location = LocalStorage._helpers.locationOf(id, index);
     if (!location.found) {
       return false;
     }
-    // remove id from roster
-    roster.splice(location.location, 1);
-    LocalStorage._saveRoster(entity, roster);
+    // remove id from index
+    index.splice(location.location, 1);
+    LocalStorage._saveIndex(entity, index);
 
     // remove the individual record
     localStorage.removeItem(key);
@@ -98,21 +98,21 @@ var ModelJS = function(schema, config) {
   };
 
   ////////////////////////////////////////////////////////////////////////
-  // ROSTER - roster is an ordered array of all ids of an entity
-  LocalStorage._getRoster = function(entity) {
-    var rosterString = localStorage.getItem(entity);
-    if (rosterString) {
-      return JSON.parse(rosterString);
+  // ROSTER - index is an ordered array of all ids of an entity
+  LocalStorage._getIndex = function(entity) {
+    var indexString = localStorage.getItem(entity);
+    if (indexString) {
+      return JSON.parse(indexString);
     } else {
       return [];
     }
   };
-  LocalStorage._saveRoster = function(entity, roster) {
-    localStorage.setItem(entity, JSON.stringify(roster));
+  LocalStorage._saveIndex = function(entity, index) {
+    localStorage.setItem(entity, JSON.stringify(index));
   };
   LocalStorage.genId = function(entity) {
-    var roster = LocalStorage._getRoster(entity);
-    var lastId = roster[roster.length-1];
+    var index = LocalStorage._getIndex(entity);
+    var lastId = index[index.length-1];
     if (lastId === undefined) {
       return 1;
     }
