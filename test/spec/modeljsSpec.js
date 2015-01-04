@@ -48,25 +48,41 @@ describe('ModelJS', function() {
     expect(country).not.toBeUndefined();
   });
 
-  it('should set id to new object', function() {
-    var country = modelJS.new('Country', {name: 'country'});
+  it('should generate an id to a new object', function() {
+    var country = modelJS.save('Country', {name: 'country'});
     expect(country.id).not.toBeUndefined();
   });
 
   it('should save to/read from client storage', function() {
-    var country = modelJS.new('Country', {name: 'country'});
-    expect(modelJS.find('Country', country.id)).not.toBeUndefined();
+    // var id = 1;
+    modelJS.save('Country', { name: 'country'});
+    expect(modelJS.find('Country', 1)).not.toBeUndefined();
   });
 
   it('should not find object with invalid id', function() {
-    // console.log(localStorage);
-    // var invalidId = -1;
-    // var test = modelJS.find('Country', invalidId);
-    // console.log(test)
-    // expect().not.toBeUndefined();    
-    // console.log(localStorage);
+    var invalidId = -1;
+    expect(modelJS.find('Country', invalidId)).toBeUndefined();    
   });
 
+  it('shouldn\'t allow to change the id', function() {
+    var country = modelJS.save('Country', {name: 'country'});
+    var id = country.id;
+    expect(id).not.toBeUndefined();
+    country.id = -1;
+    expect(country.id).toEqual(id);
+  });
 
+  // it('should save a bunch of objects', function() {
+  //   modelJS.save(
+  //     'Country',
+  //     [
+  //       {id: 1, name: 'Brasil'},
+  //       {id: 3, name: 'Uruguai'},
+  //       {id: 2, name: 'Argentina'},
+  //       {id: 4, name: 'Chile'}
+  //     ]
+  //   );
+  //   console.log(localStorage);
+  // });
 
 });

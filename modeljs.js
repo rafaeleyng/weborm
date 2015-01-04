@@ -208,7 +208,11 @@ var ModelJS = function(schema, config) {
   // base constructor
   this.Entity[this.config.base] = function(data, entity) {
     for (var key in data) {
-      this[key] = data[key];
+      if (key === 'id') {
+        Object.defineProperty(this, 'id', {value: data[key], writable: false, enumerable: true});
+      } else {
+        this[key] = data[key];
+      }
     }
     if (entity) {
       this.class = entity;
@@ -259,9 +263,6 @@ var ModelJS = function(schema, config) {
   };
 
   this._new = function(entity, data) {
-    if (data.id === undefined) {
-      data.id = this._genId(entity);
-    }     
     if (this._contextContains(entity, data)) {
       return this._getFromContext(entity, data);
     }
@@ -276,7 +277,11 @@ var ModelJS = function(schema, config) {
     return this.storage.count(entity);
   };
   this.find = function(entity, id) {
-    return this.new(entity, this.storage.find(entity, id));
+    var data = this.storage.find(entity, id);
+    if (!data) {
+      return undefined;
+    }
+    return this.new(entity, data);
   };
   this.first = function(entity) {
     return this.new(entity, this.storage.first(entity));
@@ -300,20 +305,32 @@ var ModelJS = function(schema, config) {
     if (this.schema[entity] === undefined) {
       return;
     }
-    var filteredData = this._filterData(entity, data);
+
+    var filteredData = this._filterData(entity, data);    
     if (this._isCollection(filteredData)) {
+      var savedObjects = [];
       for (var i in filteredData) {
-        this._save(entity, filteredData[i], data[i]);
+        if (!filteredData[i].id) {
+          filteredData[i].id = this._genId(entity);
+        }
+        savedObjects.push(this._save(entity, filteredData[i]));
       }
+      return savedObjects;
     } else {
-      this._save(entity, filteredData, data);
+      if (!filteredData.id) {
+        var id = this._genId(entity);
+        Object.defineProperty(filteredData, 'id', {value: id, writable: false, enumerable: true});
+      }
+      return this._save(entity, filteredData);
     }
   };
   
-  this._save = function(entity, filteredData, data) {
+  this._save = function(entity, filteredData) {
     this.storage.save(entity, filteredData);
     var Constructor = this.Entity[entity];
-    this._putInContext(entity, new Constructor(data));
+    var record = new Constructor(filteredData);
+    this._putInContext(entity, record);
+    return record;
   };
   
   // delete
