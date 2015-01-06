@@ -194,4 +194,11 @@ describe('ModelJS', function() {
     expect(modelJS.all('Country').length).toEqual(dataLength);
   });
 
+  it('should delete object when delete function is called on the object itself', function() {
+    var obj = modelJS.save(ENTITY, {name: 'Brazil'});
+    expect(modelJS.count(ENTITY)).toEqual(1);
+    obj.delete();
+    expect(modelJS.count(ENTITY)).toEqual(0);
+  });
+
 });

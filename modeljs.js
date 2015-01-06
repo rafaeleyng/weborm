@@ -2,8 +2,6 @@
 
 var ModelJS = function(schema, config) {
 
-  var ID = 'id';
-
   ////////////////////////////////////////////////////////////////////////
   /*
     LocalStorage
@@ -182,9 +180,7 @@ var ModelJS = function(schema, config) {
     ModelJS
   */
   var modelJSReference = this;
-  this.schema = schema;
-  this.Entity = {};
-
+  
   ////////////////////////////////////////////////////////////////////////
   // CONFIG
   // default config
@@ -192,7 +188,7 @@ var ModelJS = function(schema, config) {
   this.config = {
     base: '_Base',
     storage: 'localStorage',
-    pluralization: {},
+    pluralization: {}
   };
   // using user-defined configs
   for (var param in config) {
@@ -200,12 +196,18 @@ var ModelJS = function(schema, config) {
       this.config[param] = config[param];
     }
   }
+  // non-configurable defaults
+  this.config.defaultBase = '_DefaultBase';
+  schema[this.config.defaultBase] = new ModelJS.SchemaEntity(['id']);
+
   var storageConstructor = getStorage(this.config.storage);
   this.storage = new storageConstructor();
 
   ////////////////////////////////////////////////////////////////////////
   // CONSTRUCTORS
   // base constructor
+  this.schema = schema;
+  this.Entity = {}; // holds a constructor for each entity in the schema
   this.Entity[this.config.base] = function(data, entity) {
     for (var key in data) {
       if (key === 'id') {
@@ -216,7 +218,7 @@ var ModelJS = function(schema, config) {
     }
     if (entity) {
       this.class = entity;
-    };
+    }
   }
 
   // create a constructor for each entity
@@ -230,7 +232,12 @@ var ModelJS = function(schema, config) {
       };
     })(entity);
   }
-
+  this._attrsForEntity = function(entity) {
+    var defaultBaseAttrs = this.schema[this.config.defaultBase].attrs;
+    var customBaseAttrs = this.schema[this.config.base].attrs;
+    var entityAttrs = this.schema[entity].attrs;
+    return defaultBaseAttrs.concat(customBaseAttrs).concat(entityAttrs);
+  };
   ////////////////////////////////////////////////////////////////////////
   // CONTEXT
   // holds ModelJS objects (not plain JS objects)
@@ -428,7 +435,7 @@ var ModelJS = function(schema, config) {
     return this.storage.genId(entity);
   };
   this._filterData = function(entity, dirtyData) {
-    var entitySchema = this.schema[this.config.base].attrs.concat(this.schema[entity].attrs);
+    var entitySchema = this._attrsForEntity(entity);
 
     if (this._isCollection(dirtyData)) {
       var filteredObjects = [];
@@ -607,4 +614,16 @@ var ModelJS = function(schema, config) {
     Constructor.prototype = entityPrototype;
   }
 
+};
+
+ModelJS.SchemaEntity = function(attrs, relsToOne, relsToMany) {
+  if (attrs) {
+    this.attrs = attrs;  
+  }
+  if (relsToOne) {
+    this.relsToOne = relsToOne;
+  }
+  if (relsToMany) {
+    this.relsToMany = relsToMany;  
+  }
 };
