@@ -36,7 +36,7 @@ describe('LocalStorage', function() {
   it('should save object to local storage and create index for the entity', function() {
     expect(localStorage.length).toEqual(0);
     storage.save(ENTITY, {id: ID});
-    expect(localStorage.length).toEqual(2);
+    expect(localStorage.length).toEqual(3);
     expect(localStorage[storage._helpers.genKey(ENTITY, ID)]).toBeDefined();
     var entityIndex = localStorage[ENTITY];
     expect(entityIndex).toBeDefined();
@@ -49,7 +49,7 @@ describe('LocalStorage', function() {
     for (var i = 0; i < moreThanOnce; i++) {
       storage.save(ENTITY, {id: ID});
     }
-    expect(localStorage.length).toEqual(2);
+    expect(localStorage.length).toEqual(3);
     expect(localStorage[ENTITY].split('_').length).toEqual(1);
   });
 
@@ -67,6 +67,13 @@ describe('LocalStorage', function() {
     storage.save(ENTITY, {id: ID+1});
     storage.save(ENTITY, {id: ID+2});
     expect(storage.first(ENTITY).id).toEqual(ID);
+  });
+
+  it('should find the first object of a given entity', function() {
+    storage.save(ENTITY, {id: ID});
+    storage.save(ENTITY, {id: ID+1});
+    storage.save(ENTITY, {id: ID+2});
+    expect(storage.last(ENTITY).id).toEqual(ID+2);
   });
 
   it('should count records of a given entity', function() {    

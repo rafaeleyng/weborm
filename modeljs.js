@@ -34,6 +34,15 @@ var ModelJS = function(schema, config) {
       var firstId = index[0];
       return this.find(entity, firstId);
     };
+    this.last = function(entity) {
+      var count = this.count(entity);
+      if (count === 0) {
+        return undefined;
+      }
+      var index = this._getIndex(entity);
+      var lastId = index[count - 1];
+      return this.find(entity, lastId);
+    };
     this.all = function(entity) {
       var index = this._getIndex(entity);
       var objects = [];
@@ -74,7 +83,8 @@ var ModelJS = function(schema, config) {
         if (!location.found) {
           index.splice(location.location, 0, objectId);      
           this._saveIndex(entity, index);
-        } 
+        }
+        localStorage.setItem(this._idKey(entity), objectId);
       }
 
       // add or replace the individual record
@@ -112,13 +122,15 @@ var ModelJS = function(schema, config) {
     this._saveIndex = function(entity, index) {
       localStorage.setItem(entity, JSON.stringify(index));
     };
+    this._idKey = function(entity) {
+      return entity + 'Id';
+    };
     this.genId = function(entity) {
-      var index = this._getIndex(entity);
-      var lastId = index[index.length-1];
-      if (lastId === undefined) {
+      var lastId = localStorage.getItem(this._idKey(entity));
+      if (!lastId) {
         return 1;
       }
-      return lastId + 1;
+      return parseInt(lastId) + 1;
     };
     ////////////////////////////////////////////////////////////////////////
     // HELPERS
@@ -290,6 +302,9 @@ var ModelJS = function(schema, config) {
   };
   this.first = function(entity) {
     return this.new(entity, this.storage.first(entity));
+  };
+  this.last = function(entity) {
+    return this.new(entity, this.storage.last(entity));
   };
   this.all = function(entity) {
     return this.new(entity, this.storage.all(entity));

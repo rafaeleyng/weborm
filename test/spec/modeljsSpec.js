@@ -124,6 +124,13 @@ describe('ModelJS', function() {
     expect(modelJS.first(ENTITY).id).toEqual(ID);
   });
 
+  it('should find the last object of a given entity', function() {
+    modelJS.save(ENTITY, {id: ID});
+    modelJS.save(ENTITY, {id: ID+1});
+    modelJS.save(ENTITY, {id: ID+2});
+    expect(modelJS.last(ENTITY).id).toEqual(ID+2);
+  });
+
   it('should count records of a given entity', function() {    
     var aNumberOfRecords = 6;
     for (var i = 0; i < aNumberOfRecords; i++) {
@@ -170,11 +177,12 @@ describe('ModelJS', function() {
     expect(modelJS.filter(ENTITY, function(data) { return data.name === 'Peru'}).length).toEqual(1);
   });
 
-  it('should be able to delete a record', function() {
-    modelJS.save(ENTITY, {id: ID});
+  it('should be able to delete records', function() {
+    modelJS.save(ENTITY);
     expect(modelJS.count(ENTITY)).toEqual(1);
-    modelJS.save(ENTITY, {id: ID+1});
+    modelJS.save(ENTITY);
     expect(modelJS.count(ENTITY)).toEqual(2);
+    
     modelJS.delete(ENTITY, ID);
     expect(modelJS.count(ENTITY)).toEqual(1);
     modelJS.delete(ENTITY, ID+1);
@@ -201,6 +209,27 @@ describe('ModelJS', function() {
     expect(modelJS.count(ENTITY)).toEqual(1);
     obj.delete();
     expect(modelJS.count(ENTITY)).toEqual(0);
+  });
+
+  it('should maintain a sequential id for each entity', function() {
+    var aNumberOfRecords = 5;
+    for (var i = 0; i < aNumberOfRecords; i++) {
+      modelJS.save(ENTITY, {name: 'country'});
+    }
+
+    var count = modelJS.count(ENTITY);
+    expect(count).toEqual(aNumberOfRecords);
+
+    var all = modelJS.all(ENTITY);
+    var lastId = all[count - 1].id;
+
+    for (var i in all) {
+      all[i].delete();
+    }
+    expect(modelJS.count(ENTITY)).toEqual(0);
+    
+    var lastSaved = modelJS.save(ENTITY, {name: 'country'});
+    expect(lastSaved.id).toEqual(lastId + 1);
   });
 
 });
