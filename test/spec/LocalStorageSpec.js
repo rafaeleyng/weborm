@@ -75,6 +75,7 @@ describe('LocalStorage', function() {
       storage.save(ENTITY, {id: i+1});
     }
     expect(storage.count(ENTITY)).toEqual(aNumberOfRecords);
+    expect(storage.count(ENTITY)).toEqual(storage.all(ENTITY).length);    
   });
 
   it('should retrieve all records of a given entity', function() {    
@@ -87,19 +88,21 @@ describe('LocalStorage', function() {
 
   it('should retrieve any page of the records of a given entity', function() {    
     var pageSize = 5;
-    var pageNumber;
-    var aNumberOfRecords = (pageSize * 3) - 1;
+    var numberOfPages = 3;
+    var someNumberSmallerThanPageSize = pageSize - 1
+    var aNumberOfRecords = (pageSize * numberOfPages) - someNumberSmallerThanPageSize;
 
     for (var i = 0; i < aNumberOfRecords; i++) {
       storage.save(ENTITY, {id: i+1});
     }
 
-    pageNUmber = 0;
-    expect(storage.page(ENTITY, pageNUmber, pageSize).length).toEqual(pageSize);
-    pageNUmber = 1;
-    expect(storage.page(ENTITY, pageNUmber, pageSize).length).toEqual(pageSize);
-    pageNUmber = 2;
-    expect(storage.page(ENTITY, pageNUmber, pageSize).length).toEqual(pageSize - 1);
+    for (var pageNumber = 0; pageNumber < numberOfPages; pageNumber++) {
+      if (pageNumber === numberOfPages - 1) {
+        expect(storage.page(ENTITY, pageNumber, pageSize).length).toEqual(pageSize - someNumberSmallerThanPageSize);
+      } else {
+        expect(storage.page(ENTITY, pageNumber, pageSize).length).toEqual(pageSize);
+      }
+    }
   });
 
   it('should filter the records of a given entity by any property', function() {
@@ -114,7 +117,11 @@ describe('LocalStorage', function() {
   it('should be able to delete a record', function() {
     storage.save(ENTITY, {id: ID});
     expect(storage.count(ENTITY)).toEqual(1);
+    storage.save(ENTITY, {id: ID+1});
+    expect(storage.count(ENTITY)).toEqual(2);
     storage.delete(ENTITY, ID);
+    expect(storage.count(ENTITY)).toEqual(1);
+    storage.delete(ENTITY, ID+1);
     expect(storage.count(ENTITY)).toEqual(0);
   });
 

@@ -25,14 +25,16 @@ describe('ModelJS', function() {
     }
   };
 
+  var ENTITY = 'Country';
+  var ID = 1;
+
   beforeEach(function() {
     modelJS = new ModelJS(schema, config);
-    storage = modelJS.storage;
-    storage.clean();
+    modelJS.storage.clean();
   });
 
   afterAll(function() {
-    storage.clean();
+    modelJS.storage.clean();
   });
 
   it('should be defined', function() {
@@ -67,17 +69,128 @@ describe('ModelJS', function() {
     expect(country.id).toEqual(id);
   });
 
-  // it('should save a bunch of objects', function() {
-  //   modelJS.save(
-  //     'Country',
-  //     [
-  //       {id: 1, name: 'Brasil'},
-  //       {id: 3, name: 'Uruguai'},
-  //       {id: 2, name: 'Argentina'},
-  //       {id: 4, name: 'Chile'}
-  //     ]
-  //   );
-  //   console.log(localStorage);
-  // });
+  it('should tell whether two ModelJS objects reffer to the same record', function() {
+    var country1 = modelJS.save('Country', {name: 'Brazil'});
+    var country1Found = modelJS.find('Country', country1.id);
+    var country2 = modelJS.save('Country', {name: 'Peru'});
+    var country2Found = modelJS.find('Country', country2.id);
+    var state1 = modelJS.save('State', {name: 'Rio Grande do Sul'});
+
+    expect(modelJS.same(country1, country1Found)).toBeTruthy();
+    expect(modelJS.same(country2, country2Found)).toBeTruthy();
+
+    expect(modelJS.same(country1, country2)).toBeFalsy();
+    expect(modelJS.same(country1, state1)).toBeFalsy();
+  });
+
+  it('should keep objects in context and return always the same instance for a record', function() {
+    var country1 = modelJS.save('Country', {name: 'Brazil'});
+    var country1Found = modelJS.find('Country', country1.id);
+    expect(country1 === country1Found).toEqual(true);
+    
+    var state1 = modelJS.save('State', {name: 'Rio Grande do Sul'});
+    state1.Country = country1;
+    state1.save();
+    var state1Found = modelJS.find('State', state1.id);
+    expect(country1 === state1Found.Country).toEqual(true);
+  });
+
+  it('should tell whether two ModelJS objects are equal', function() {
+    var brazil = modelJS.save('Country', {name: 'Brazil', abbr: 'BR'});
+    var brazil2 = modelJS.save('Country', {name: 'Brazil', abbr: 'BRA'});
+    var brasil = modelJS.save('Country', {name: 'Brasil', abbr: 'BR'});
+    var sc = modelJS.save('State', {name: 'Santa Catarina'});
+
+    expect(modelJS.equals(brazil, brazil)).toBeTruthy();
+
+    expect(modelJS.equals(brazil, brasil)).toBeFalsy();
+    expect(modelJS.equals(brazil, brazil2)).toBeFalsy();
+    expect(modelJS.equals(brazil, sc)).toBeFalsy();
+    // TODO test relationships?
+    // TODO does this 'equals' method really have a point for existing?
+  });
+
+  it('should find objects previously saved', function() {
+    modelJS.save(ENTITY, {id: ID});
+    expect(modelJS.find(ENTITY, ID)).toBeDefined();
+  });
+
+  it('should find the first object of a given entity', function() {
+    modelJS.save(ENTITY, {id: ID});
+    modelJS.save(ENTITY, {id: ID+1});
+    modelJS.save(ENTITY, {id: ID+2});
+    expect(modelJS.first(ENTITY).id).toEqual(ID);
+  });
+
+  it('should count records of a given entity', function() {    
+    var aNumberOfRecords = 6;
+    for (var i = 0; i < aNumberOfRecords; i++) {
+      modelJS.save(ENTITY, {id: i+1});
+    }
+    expect(modelJS.count(ENTITY)).toEqual(aNumberOfRecords);
+    expect(modelJS.count(ENTITY)).toEqual(modelJS.all(ENTITY).length);    
+  });
+
+  it('should retrieve all records of a given entity', function() {    
+    var aNumberOfRecords = 10;
+    for (var i = 0; i < aNumberOfRecords; i++) {
+      modelJS.save(ENTITY, {id: i+1});
+    }
+    expect(modelJS.all(ENTITY).length).toEqual(aNumberOfRecords);
+  });
+
+  it('should retrieve any page of the records of a given entity', function() {    
+    var pageSize = 5;
+    var numberOfPages = 3;
+    var someNumberSmallerThanPageSize = pageSize - 1
+    var aNumberOfRecords = (pageSize * numberOfPages) - someNumberSmallerThanPageSize;
+
+    for (var i = 0; i < aNumberOfRecords; i++) {
+      modelJS.save(ENTITY, {id: i+1});
+    }
+
+    for (var pageNumber = 0; pageNumber < numberOfPages; pageNumber++) {
+      if (pageNumber === numberOfPages - 1) {
+        expect(modelJS.page(ENTITY, pageNumber, pageSize).length).toEqual(pageSize - someNumberSmallerThanPageSize);
+      } else {
+        expect(modelJS.page(ENTITY, pageNumber, pageSize).length).toEqual(pageSize);
+      }
+    }
+  });
+
+  it('should filter the records of a given entity by any property', function() {
+    modelJS.save(ENTITY, {id: 1, name: 'Brazil'});
+    modelJS.save(ENTITY, {id: 2, name: 'Brazil'});
+    modelJS.save(ENTITY, {id: 3, name: 'Peru'});
+    expect(modelJS.count(ENTITY)).toEqual(3);
+    expect(modelJS.filter(ENTITY, function(data) { return data.name === 'Brazil'}).length).toEqual(2);
+    expect(modelJS.filter(ENTITY, function(data) { return data.name === 'Peru'}).length).toEqual(1);
+  });
+
+  it('should be able to delete a record', function() {
+    modelJS.save(ENTITY, {id: ID});
+    expect(modelJS.count(ENTITY)).toEqual(1);
+    modelJS.save(ENTITY, {id: ID+1});
+    expect(modelJS.count(ENTITY)).toEqual(2);
+    modelJS.delete(ENTITY, ID);
+    expect(modelJS.count(ENTITY)).toEqual(1);
+    modelJS.delete(ENTITY, ID+1);
+    expect(modelJS.count(ENTITY)).toEqual(0);
+  });
+
+  it('should save a bunch of objects', function() {
+    var data = [
+      {name: 'Brazil'},
+      {name: 'Uruguay'},
+      {name: 'Argentina'},
+      {name: 'Chile'}
+    ];
+    var dataLength = data.length;
+    var countries = modelJS.save('Country', data);
+
+    expect(countries.length).toEqual(dataLength);
+    expect(modelJS.count('Country')).toEqual(dataLength);
+    expect(modelJS.all('Country').length).toEqual(dataLength);
+  });
 
 });

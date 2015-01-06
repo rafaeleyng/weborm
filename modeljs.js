@@ -386,7 +386,19 @@ var ModelJS = function(schema, config) {
     return obj1.class === obj2.class && obj1.id === obj2.id;
   };
   this.equals = function(obj1, obj2) {
-    // TODO implementar iterando sobre os attributos previstos no schema
+    // debugger
+    if (!obj1.class || obj1.class !== obj2.class) {
+      return false;
+    }
+    var entity = obj1.class
+    var attrs = this.schema[entity].attrs;
+    for (var i in attrs) {
+      var attr = attrs[i];
+      if (obj1[attr] !== obj2[attr]) {
+        return false;
+      }
+    }
+    return true;
   };
 
   ////////////////////////////////////////////////////////////////////////
