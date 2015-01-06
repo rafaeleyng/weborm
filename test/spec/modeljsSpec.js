@@ -159,11 +159,12 @@ describe('ModelJS', function() {
   });
 
   it('should filter the records of a given entity by any property', function() {
-    modelJS.save(ENTITY, {id: 1, name: 'Brazil'});
-    modelJS.save(ENTITY, {id: 2, name: 'Brazil'});
-    modelJS.save(ENTITY, {id: 3, name: 'Peru'});
+    modelJS.save(ENTITY, {name: 'Brazil', abbr: 'BR'});
+    modelJS.save(ENTITY, {name: 'Brazil', abbr: 'BRA'});
+    modelJS.save(ENTITY, {name: 'Peru', abbr: 'PE'});
     expect(modelJS.count(ENTITY)).toEqual(3);
     expect(modelJS.filter(ENTITY, function(data) { return data.name === 'Brazil'}).length).toEqual(2);
+    expect(modelJS.filter(ENTITY, function(data) { return data.name === 'Brazil' && data.abbr === 'BR'}).length).toEqual(1);
     expect(modelJS.filter(ENTITY, function(data) { return data.name === 'Peru'}).length).toEqual(1);
   });
 

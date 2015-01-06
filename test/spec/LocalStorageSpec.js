@@ -106,11 +106,12 @@ describe('LocalStorage', function() {
   });
 
   it('should filter the records of a given entity by any property', function() {
-    storage.save(ENTITY, {id: 1, name: 'Brazil'});
-    storage.save(ENTITY, {id: 2, name: 'Brazil'});
-    storage.save(ENTITY, {id: 3, name: 'Peru'});
+    storage.save(ENTITY, {id: 1, name: 'Brazil', abbr: 'BR'});
+    storage.save(ENTITY, {id: 2, name: 'Brazil', abbr: 'BRA'});
+    storage.save(ENTITY, {id: 3, name: 'Peru', abbr: 'PE'});
     expect(storage.count(ENTITY)).toEqual(3);
     expect(storage.filter(ENTITY, function(data) { return data.name === 'Brazil'}).length).toEqual(2);
+    expect(storage.filter(ENTITY, function(data) { return data.name === 'Brazil' && data.abbr === 'BR'}).length).toEqual(1);
     expect(storage.filter(ENTITY, function(data) { return data.name === 'Peru'}).length).toEqual(1);
   });
 
