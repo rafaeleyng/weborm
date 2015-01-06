@@ -3,21 +3,12 @@ describe('ModelJS', function() {
   var modelJS;
   var storage;
   var schema = {
-    _Base: { 
-      attrs: ['id'],
-    }, 
-    Country: { 
-      attrs: ['name', 'abbr'],
-    }, 
-    State: { 
-      attrs: ['name', 'abbr'], 
-      relsToOne: ['Country'],
-    },
-    City: { 
-      attrs: ['name'], 
-      relsToOne: ['State'],
-    }
+    _Base: new ModelJS.SchemaEntity(['name']),
+    Country: new ModelJS.SchemaEntity(['abbr']),
+    State: new ModelJS.SchemaEntity(['abbr'], ['Country']),
+    City: new ModelJS.SchemaEntity([], ['State'])
   };
+  
   var config = {
     pluralization: {
       Country: 'Countries',
@@ -67,6 +58,17 @@ describe('ModelJS', function() {
     expect(id).toBeDefined();
     country.id = -1;
     expect(country.id).toEqual(id);
+  });
+
+  it('should filter properties not in the schema', function() {
+    var country = modelJS.save('Country', {name: 'country', propNotInSchema: 'any value'});
+    expect(country.propNotInSchema).toBeUndefined();
+  });
+
+  it('entities should inherit properties from the base entity', function() {
+    var country = modelJS.save('Country', {name: 'country', propNotInSchema: 'any value'});
+    expect(country.name).toBeDefined();
+    expect(country.propNotInSchema).toBeUndefined();
   });
 
   it('should tell whether two ModelJS objects reffer to the same record', function() {

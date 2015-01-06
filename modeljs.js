@@ -186,7 +186,6 @@ var ModelJS = function(schema, config) {
   // default config
   // every accepted configuration must be different that undefined inside this.config
   this.config = {
-    base: '_Base',
     storage: 'localStorage',
     pluralization: {}
   };
@@ -197,6 +196,7 @@ var ModelJS = function(schema, config) {
     }
   }
   // non-configurable defaults
+  this.config.base = '_Base';
   this.config.defaultBase = '_DefaultBase';
   schema[this.config.defaultBase] = new ModelJS.SchemaEntity(['id']);
 
@@ -208,7 +208,7 @@ var ModelJS = function(schema, config) {
   // base constructor
   this.schema = schema;
   this.Entity = {}; // holds a constructor for each entity in the schema
-  this.Entity[this.config.base] = function(data, entity) {
+  this.Entity[this.config.defaultBase] = function(data, entity) {
     for (var key in data) {
       if (key === 'id') {
         Object.defineProperty(this, 'id', {value: data[key], writable: false, enumerable: true});
@@ -223,18 +223,18 @@ var ModelJS = function(schema, config) {
 
   // create a constructor for each entity
   for (var entity in this.schema) {
-    if (entity === this.config.base) { 
+    if (entity === this.config.defaultBase) { 
       continue;
     }
     (function(ent) {
-      modelJSReference.Entity[ent] =  function(data) { 
-        modelJSReference.Entity[modelJSReference.config.base].call(this, data, ent)
+      modelJSReference.Entity[ent] = function(data) { 
+        modelJSReference.Entity[modelJSReference.config.defaultBase].call(this, data, ent)
       };
     })(entity);
   }
   this._attrsForEntity = function(entity) {
-    var defaultBaseAttrs = this.schema[this.config.defaultBase].attrs;
-    var customBaseAttrs = this.schema[this.config.base].attrs;
+    var defaultBaseAttrs = this.schema[this.config.defaultBase].attrs;    
+    var customBaseAttrs = this.schema[this.config.base] ? this.schema[this.config.base].attrs : [];
     var entityAttrs = this.schema[entity].attrs;
     return defaultBaseAttrs.concat(customBaseAttrs).concat(entityAttrs);
   };
@@ -392,15 +392,19 @@ var ModelJS = function(schema, config) {
   this.same = function(obj1, obj2) {
     return obj1.class === obj2.class && obj1.id === obj2.id;
   };
+  // whether two objects have the same values for properties, not considering the id
   this.equals = function(obj1, obj2) {
     // debugger
     if (!obj1.class || obj1.class !== obj2.class) {
       return false;
     }
     var entity = obj1.class
-    var attrs = this.schema[entity].attrs;
+    var attrs = this._attrsForEntity(entity);
     for (var i in attrs) {
       var attr = attrs[i];
+      if (attr === 'id') {
+        continue;
+      }
       if (obj1[attr] !== obj2[attr]) {
         return false;
       }
@@ -617,13 +621,7 @@ var ModelJS = function(schema, config) {
 };
 
 ModelJS.SchemaEntity = function(attrs, relsToOne, relsToMany) {
-  if (attrs) {
-    this.attrs = attrs;  
-  }
-  if (relsToOne) {
-    this.relsToOne = relsToOne;
-  }
-  if (relsToMany) {
-    this.relsToMany = relsToMany;  
-  }
+  this.attrs = attrs || [];
+  this.relsToOne = relsToOne || [];
+  this.relsToMany = relsToMany || [];
 };
