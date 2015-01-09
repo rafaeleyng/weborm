@@ -1,4 +1,4 @@
-describe('ModelJS', function() {
+describe('ModelJS relationships', function() {
 
   var modelJS;
   var storage;
@@ -6,7 +6,8 @@ describe('ModelJS', function() {
     _Base: new ModelJS.SchemaEntity(['name']),
     Country: new ModelJS.SchemaEntity(['abbr']),
     State: new ModelJS.SchemaEntity(['abbr'], ['Country']),
-    City: new ModelJS.SchemaEntity([], ['State'])
+    City: new ModelJS.SchemaEntity([], ['State'], ['Service']),
+    Service: new ModelJS.SchemaEntity([])
   };
   
   var config = {
@@ -106,6 +107,44 @@ describe('ModelJS', function() {
     var florianopolis = modelJS.save('City', {name:'Florianópolis', _stateId: sc.id});
     var garopaba = modelJS.save('City', {name:'Garopaba', _stateId: sc.id});
     expect(sc.Cities.length).toEqual(2);
+  });
+
+  it('should handle `1 to many` relationships', function() {
+    var restaurant = modelJS.save('Service', {name:'Restaurant'});
+    var shoppingCenter = modelJS.save('Service', {name:'Shopping Center'});
+    var skatepark = modelJS.save('Service', {name:'Skatepark'});
+
+    var feliz = modelJS.save('City', {name:'Feliz', _servicesId:[restaurant.id]});
+    expect(feliz.Services.length).toEqual(1);
+
+    var saoLeopoldoServicesIds = [restaurant.id, shoppingCenter.id];
+    var saoLeopoldo = modelJS.save('City', {name:'São Leopoldo', _servicesId:saoLeopoldoServicesIds});
+    expect(saoLeopoldo.Services.length).toEqual(saoLeopoldoServicesIds.length);
+
+    var portoAlegreServicesIds = [restaurant.id, shoppingCenter.id, skatepark.id];
+    var portoAlegre = modelJS.save('City', {name:'Porto Alegre', _servicesId:portoAlegreServicesIds});
+    expect(portoAlegre.Services.length).toEqual(portoAlegreServicesIds.length);
+  });
+
+  it('should make `1 to many` relationships by setting the relation id', function() {
+    var restaurant = modelJS.save('Service', {name:'Restaurant'});
+    var feliz = modelJS.save('City', {name:'Feliz', _servicesId:[restaurant.id]});
+
+    expect(feliz.Services[0]).toEqual(restaurant);
+  });
+
+  it('should add and remove `1 to many` relationships', function() {
+    var restaurant = modelJS.save('Service', {name:'Restaurant'});
+    var feliz = modelJS.save('City', {name:'Feliz'});
+
+    expect(feliz.Services.length).toEqual(0);
+    modelJS.addTo(restaurant, feliz);
+    expect(feliz.Services.length).toEqual(1);
+    expect(feliz.Services[0]).toEqual(restaurant);
+
+    modelJS.removeFrom(restaurant, feliz);
+    expect(feliz.Services.length).toEqual(0);
+    expect(feliz.Services[0]).toBeUndefined();
   });
 
 });
