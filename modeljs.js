@@ -266,20 +266,20 @@ var ModelJS = function(schema, config) {
     return this.context[entity + '_' + data.id] !== undefined;
   };
   // returns one or an array of ModelJS objects with the correct entity type
-  this.new = function(entity, data) {
+  this._create = function(entity, data) {
     data = data || {};
     if (this._isCollection(data)) {
       var objects = [];
       for (var i in data) {     
-        objects.push(this._new(entity, data[i]));       
+        objects.push(this._createOrGetFromContex(entity, data[i]));       
       }
       return objects;
     } else {
-      return this._new(entity, data);
+      return this._createOrGetFromContex(entity, data);
     }
   };
 
-  this._new = function(entity, data) {
+  this._createOrGetFromContex = function(entity, data) {
     if (this._contextContains(entity, data)) {
       return this._getFromContext(entity, data);
     }
@@ -298,25 +298,25 @@ var ModelJS = function(schema, config) {
     if (!data) {
       return undefined;
     }
-    return this.new(entity, data);
+    return this._create(entity, data);
   };
   this.first = function(entity) {
-    return this.new(entity, this.storage.first(entity));
+    return this._create(entity, this.storage.first(entity));
   };
   this.last = function(entity) {
-    return this.new(entity, this.storage.last(entity));
+    return this._create(entity, this.storage.last(entity));
   };
   this.all = function(entity) {
-    return this.new(entity, this.storage.all(entity));
+    return this._create(entity, this.storage.all(entity));
   };
   this.page = function(entity, pageNumber, pageSize) {
-    return this.new(entity, this.storage.page(entity, pageNumber, pageSize));
+    return this._create(entity, this.storage.page(entity, pageNumber, pageSize));
   };
   this.filter = function(entity, filterFunction) {
     if (!filterFunction) {
       return this.all(entity);
     };
-    return this.new(entity, this.storage.filter(entity, filterFunction));
+    return this._create(entity, this.storage.filter(entity, filterFunction));
   };
 
   // insert / update

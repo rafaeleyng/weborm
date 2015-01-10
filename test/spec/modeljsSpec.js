@@ -33,7 +33,7 @@ describe('ModelJS', function() {
   });
 
   it('should create new object', function() {
-    var country = modelJS.new('Country', {name: 'country'});
+    var country = modelJS.save('Country', {name: 'country'});
     expect(country).toBeDefined();
   });
 
