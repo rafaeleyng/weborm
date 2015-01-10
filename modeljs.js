@@ -236,7 +236,10 @@ var ModelJS = function(schema, config) {
   // create a constructor for each entity
   for (var entity in this.schema) {
     if (entity === this.config.defaultBase) { 
-      continue;
+      continue; // won't allow to override the defaultBase entity, which provides the id for each record
+    }
+    if (!this.schema[entity].attrs) {
+      this.schema[entity].attrs = [];
     }
     (function(ent) {
       modelJSReference.Entity[ent] = function(data) { 

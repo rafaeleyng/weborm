@@ -3,11 +3,21 @@ describe('ModelJS relationships', function() {
   var modelJS;
   var storage;
   var schema = {
-    _Base: new ModelJS.SchemaEntity(['name']),
-    Country: new ModelJS.SchemaEntity(['abbr']),
-    State: new ModelJS.SchemaEntity(['abbr'], ['Country']),
-    City: new ModelJS.SchemaEntity([], ['State'], ['Service']),
-    Service: new ModelJS.SchemaEntity([])
+    _Base: {
+      attrs: ['name']
+    },
+    Country: {
+      attrs: ['abbr']
+    },
+    State: {
+      attrs: ['abbr'],
+      relsToOne: ['Country']
+    },
+    City: {
+      relsToOne: ['State'],
+      relsToMany: ['Service']
+    },
+    Service: {}
   };
   
   var config = {
