@@ -48,9 +48,9 @@ ModelJS.SchemaEntity(attrs, relsToOne, relsToMany);
 
 ## Inheritance
 
-Every ModelJS object inherits attributes from an entity called `_DefaultBase`. Currently, the only inherited attribute is the `id`, which works pretty much as an id in a relational database.
+Every ModelJSEntity object inherits attributes from an entity called `_DefaultBase`. Currently, the only inherited attribute is the `id`, which works pretty much as an id in a relational database.
 
-Additionaly, you can specify a custom base entity, which *must* be called `_Base`. Every ModelJS object will inherit the attributes defined in your `_Base`.
+Additionaly, you can specify a custom base entity, which *must* be called `_Base`. Every ModelJSEntity object will inherit the attributes defined in your `_Base`.
 
 Note that defining a `_Base` won't have any impact on the `_DefaultBase`. So **you don't have to define the `id` attribute** yourself.
 
@@ -184,6 +184,8 @@ rs.Cities; // [portoAlegre, feliz]
 
 ### Relationships 'to many'
 
+You can `add` objects `To`, and `remove` objects `From` a 'to many' relationship
+
 ```
 var bronze = modeljs.save('Badge', {name: 'Bronze'});
 var silver = modeljs.save('Badge', {name: 'Silver'});
@@ -198,4 +200,10 @@ modeljs.addTo(gold, player);
 
 player.Badges.length; // 3
 player.Badges[2].name; // 'Gold'
+
+modeljs.removeFrom(silver, player);
+
+player.Badges.length; // 2
+player.Badges[1].name; // 'Gold'
+
 ```

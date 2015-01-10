@@ -255,7 +255,7 @@ var ModelJS = function(schema, config) {
   };
   ////////////////////////////////////////////////////////////////////////
   // CONTEXT
-  // holds ModelJS objects (not plain JS objects)
+  // holds ModelJSEntity objects (not plain JS objects)
   this.context = {};
 
   this._getFromContext = function(entity, data) {
@@ -268,7 +268,7 @@ var ModelJS = function(schema, config) {
   this._contextContains = function(entity, data) {
     return this.context[entity + '_' + data.id] !== undefined;
   };
-  // returns one or an array of ModelJS objects with the correct entity type
+  // returns one or an array of ModelJSEntity objects with the correct entity type
   this._create = function(entity, data) {
     data = data || {};
     if (this._isCollection(data)) {
