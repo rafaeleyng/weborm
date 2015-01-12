@@ -2,13 +2,13 @@
 
 A JavaScript library for handling client-side storage.
 
-ModelJS intents to provide a common interface independent of the chosen underlying storage solution and to allow a ORM-like use of this solutions.
+ModelJS intents to provide a common interface independent of the chosen underlying storage solution and to allow a ORM-like use of the browser-side storage.
 
-It is also great for prototyping your application and simulate your API responses.
+It is also useful for prototyping your application and simulate your API responses.
 
-## Documentation
+## Docs
 
-Read [the docs]().
+[Get started](http://rafaeleyng.github.io/model-js/get-started.html) or read [the docs](http://rafaeleyng.github.io/model-js/docs.html).
 
 ## Example Application
 
