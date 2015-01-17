@@ -12,7 +12,7 @@ It is also useful for prototyping your application and simulate your API respons
 
 ## Example Application
 
-See [the code]() or try the [live application]().
+See [the code](https://github.com/rafaeleyng/model-js-ex01) or try the [live application](http://rafaeleyng.github.io/model-js-ex01/).
 
 ## License
 
