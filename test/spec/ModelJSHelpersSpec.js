@@ -66,6 +66,11 @@ describe('ModelJS Helpers', function() {
     expect(modelJS._lcFirst('anything')).toEqual('anything');
   });
 
+  it('should uppercase the first letter of a string', function() {
+    expect(modelJS._ucFirst('ANything')).toEqual('ANything');
+    expect(modelJS._ucFirst('anything')).toEqual('Anything');
+  });
+
   it('should generate an unique key for each record based on entity name + id', function() {
     expect(modelJS._genKey('Country', 1)).toEqual('Country_1');
   });

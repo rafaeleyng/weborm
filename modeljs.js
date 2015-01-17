@@ -2,6 +2,9 @@
 
 var ModelJS = function(schema, config) {
 
+  var self = this;
+  var ID = 'id';
+
   ////////////////////////////////////////////////////////////////////////
   /*
     LocalStorage
@@ -124,7 +127,7 @@ var ModelJS = function(schema, config) {
       localStorage.setItem(entity, JSON.stringify(index));
     };
     this._idKey = function(entity) {
-      return entity + 'Id';
+      return entity + self._ucFirst(ID);
     };
     this.genId = function(entity) {
       var lastId = localStorage.getItem(this._idKey(entity));
@@ -192,7 +195,6 @@ var ModelJS = function(schema, config) {
   /*
     ModelJS
   */
-  var modelJSReference = this;
   
   ////////////////////////////////////////////////////////////////////////
   // CONFIG
@@ -211,7 +213,7 @@ var ModelJS = function(schema, config) {
   // non-configurable defaults
   this.config.base = '_Base';
   this.config.defaultBase = '_DefaultBase';
-  schema[this.config.defaultBase] = new ModelJS.SchemaEntity(['id']);
+  schema[this.config.defaultBase] = new ModelJS.SchemaEntity([ID]);
 
   var storageConstructor = getStorage(this.config.storage);
   this.storage = new storageConstructor();
@@ -223,8 +225,8 @@ var ModelJS = function(schema, config) {
   this.Entity = {}; // holds a constructor for each entity in the schema
   this.Entity[this.config.defaultBase] = function(data, entity) {
     for (var key in data) {
-      if (key === 'id') {
-        Object.defineProperty(this, 'id', {value: data[key], writable: false, enumerable: true});
+      if (key === ID) {
+        Object.defineProperty(this, ID, {value: data[key], writable: false, enumerable: true});
       } else {
         this[key] = data[key];
       }
@@ -243,8 +245,8 @@ var ModelJS = function(schema, config) {
       this.schema[entity].attrs = [];
     }
     (function(ent) {
-      modelJSReference.Entity[ent] = function(data) { 
-        modelJSReference.Entity[modelJSReference.config.defaultBase].call(this, data, ent)
+      self.Entity[ent] = function(data) { 
+        self.Entity[self.config.defaultBase].call(this, data, ent)
       };
     })(entity);
   }
@@ -355,14 +357,13 @@ var ModelJS = function(schema, config) {
     this._putInContext(entity, record);
     
     // insert the new object in the inverse relationship arrays
-    // debugger
     if (isAdding) {
       var inverseRelName = this._pluralize(entity);
       for (var i in this.context) {
         var ctxObj = this.context[i];
         var inverseRelObjs = ctxObj[inverseRelName];
         if (inverseRelObjs) {
-          if (ctxObj.id === record[this._lcFirst(ctxObj.class) + 'Id']) {
+          if (ctxObj.id === record[this._lcFirst(ctxObj.class) + self._ucFirst(ID)]) {
             var alreadyInTheInverse = false;
             for (var j in inverseRelObjs) {
               if (inverseRelObjs[j].id === record.id) {
@@ -385,7 +386,6 @@ var ModelJS = function(schema, config) {
   this.delete = function(entity, id) {
     delete this.context[this._genKey(entity, id)];
     // delete the deleted object in the inverse relationship arrays
-    // TODO add test to this
     var inverseRelName = this._pluralize(entity);
     for (var i  in this.context) {
       var ctxObj = this.context[i];
@@ -409,7 +409,7 @@ var ModelJS = function(schema, config) {
   this.addTo = function(addThis, toObj) {
     var property = this._pluralize(addThis.class);
     var newRelationObjs = this._makeCollection(addThis);
-    var oldRelationIds = toObj[this._lcFirst(property) + 'Id'];
+    var oldRelationIds = toObj[this._lcFirst(property) + self._ucFirst(ID)];
     var filteredObjs = [];
     // won't allow duplicates
     for (var i in newRelationObjs) {
@@ -455,7 +455,6 @@ var ModelJS = function(schema, config) {
   };
   // whether two objects have the same values for properties, not considering the id
   this.equals = function(obj1, obj2) {
-    // debugger
     if (!obj1.class || obj1.class !== obj2.class) {
       return false;
     }
@@ -463,7 +462,7 @@ var ModelJS = function(schema, config) {
     var attrs = this._attrsForEntity(entity);
     for (var i in attrs) {
       var attr = attrs[i];
-      if (attr === 'id') {
+      if (attr === ID) {
         continue;
       }
       if (obj1[attr] !== obj2[attr]) {
@@ -476,7 +475,7 @@ var ModelJS = function(schema, config) {
   ////////////////////////////////////////////////////////////////////////
   // HELPERS
   this._pluralize = function(entity) {
-    return this.config.pluralization[entity] || entity + 's'
+    return this.config.pluralization[entity] || entity + 's';
   };
   this._typeOf = function(value) {
     return Object.prototype.toString.call(value).slice(8,-1);
@@ -492,6 +491,9 @@ var ModelJS = function(schema, config) {
   };
   this._lcFirst = function(str) {
     return str.substr(0,1).toLowerCase() + str.substr(1, str.length);
+  };
+  this._ucFirst = function(str) {
+    return str.substr(0,1).toUpperCase() + str.substr(1, str.length);
   };
   this._genKey = function(entity, id) {
     return entity + '_' + id;
@@ -533,15 +535,15 @@ var ModelJS = function(schema, config) {
       // Property: Country - the relationship object accessor
 
       var _Property = '_' + Property; // _Country - the variable that holds the relationship object
-      var property = modelJSReference._lcFirst(Property); // country
-      var propertyId = property + 'Id'; // countryId - the relationship id accessor
+      var property = self._lcFirst(Property); // country
+      var propertyId = property + self._ucFirst(ID); // countryId - the relationship id accessor
       var _propertyId = '_' + propertyId; // _countryId - the variable that holds the relationship id
 
       // accessors for relationship object
       Object.defineProperty(this, Property, {
         get: function() {
           if (!this[_Property]) {
-            this[_Property] = modelJSReference.find(Property, this[_propertyId]);
+            this[_Property] = self.find(Property, this[_propertyId]);
           }
           return this[_Property];
         },
@@ -565,31 +567,31 @@ var ModelJS = function(schema, config) {
 
     // parameters are capitalized to better represent the capitalization of the strings they represent
     directRelToMany: function(Entity, Pluralized) {   
-      // pluralized: Quadrants - the relationship object accessor
+      // pluralized: Services - the relationship object accessor
 
-      var _Pluralized = '_' + Pluralized; // _Quadrants - the variable that holds the relationship objects
-      var pluralized = modelJSReference._lcFirst(Pluralized); // quadrants
-      var pluralizedId = pluralized + 'Id'; // quadrants - the relationships id accessor
-      var _pluralizedId = '_' + pluralizedId; // _quadrantsId - the variable that holds the relationships id
+      var _Pluralized = '_' + Pluralized; // _Services - the variable that holds the relationship objects
+      var pluralized = self._lcFirst(Pluralized); // services
+      var pluralizedId = pluralized + self._ucFirst(ID); // servicesId - the relationships id accessor
+      var _pluralizedId = '_' + pluralizedId; // _servicesId - the variable that holds the relationships id
 
       // accessors for relationship objects
       Object.defineProperty(this, Pluralized, {
         get: function() {
           if (!this[_Pluralized]) {
-            var self = this;
-            this[_Pluralized] = modelJSReference.filter(Entity, 
+            var _this = this;
+            this[_Pluralized] = self.filter(Entity, 
               function(obj) { 
-                if (self[_pluralizedId] === undefined) {
+                if (_this[_pluralizedId] === undefined) {
                   return false;
                 }
-                return self[_pluralizedId].indexOf(obj.id) > -1 });
+                return _this[_pluralizedId].indexOf(obj.id) > -1 });
             this[_Pluralized] = this[_Pluralized] || [];
           }
           return this[_Pluralized] || [];
         },
         set: function(newObjs) {            
-          this[_pluralizedId] = modelJSReference._makeCollection(newObjs).map(function(obj) { return obj.id; });
-          this[_Pluralized] = modelJSReference._makeCollection(newObjs);
+          this[_pluralizedId] = self._makeCollection(newObjs).map(function(obj) { return obj.id; });
+          this[_Pluralized] = self._makeCollection(newObjs);
         },
       });
 
@@ -611,14 +613,14 @@ var ModelJS = function(schema, config) {
       // inverseName: Cities
 
       var _inverseName = '_' + inverseName; // _Cities
-      var entityId = '_' + modelJSReference._lcFirst(entity) + 'Id'; // _stateId
+      var entityId = '_' + self._lcFirst(entity) + self._ucFirst(ID); // _stateId
 
       // accessors for inverse relationship objects (an array)
       Object.defineProperty(this, inverseName, {
         get: function() {
           if (!this[_inverseName]) {
             var thisId = this.id;
-            this[_inverseName] = modelJSReference.filter(inverse, 
+            this[_inverseName] = self.filter(inverse, 
               function(obj) { return obj[entityId] === thisId; }); }
           return this[_inverseName];
         },
@@ -627,10 +629,10 @@ var ModelJS = function(schema, config) {
 
     // convenience methods
     save: function() {
-      modelJSReference.save(this.class, this);
+      self.save(this.class, this);
     },
     delete: function() {
-      modelJSReference.delete(this.class, this.id);
+      self.delete(this.class, this.id);
     },
 
   };
@@ -641,23 +643,22 @@ var ModelJS = function(schema, config) {
 
     var entityPrototype = Object.create(basePrototype);
 
-    // TODO melhorar esse comentário e o do próximo FOR, e esclarecer melhor o que é 'to one' e 'to many' aqui
     // create the direct relationships 'to one' (e.g. state.Country)
     var relsToOne = this.schema[entity].relsToOne;
     for (var i in relsToOne) {
       var relationship = relsToOne[i];
       // augment the schema by adding the fields that will hold the relationship ids (_countryId)
-      this.schema[entity].attrs.push('_' + this._lcFirst(relationship) + 'Id');
+      this.schema[entity].attrs.push('_' + this._lcFirst(relationship) + self._ucFirst(ID));
       entityPrototype.directRelToOne(relationship); 
     }
 
-    // create the direct relationships 'to many' (e.g. customer.Quadrants)
+    // create the direct relationships 'to many' (e.g. city.Services)
     var relsToMany = this.schema[entity].relsToMany;
     for (var i in relsToMany) {
       var relationship = relsToMany[i];
-      // augment the schema by adding the fields that will hold the relationship ids (_quadrantsId)
+      // augment the schema by adding the fields that will hold the relationship ids (_servicesId)
       var pluralized = this._pluralize(relationship);     
-      this.schema[entity].attrs.push('_' + this._lcFirst(pluralized) + 'Id');
+      this.schema[entity].attrs.push('_' + this._lcFirst(pluralized) + self._ucFirst(ID));
       entityPrototype.directRelToMany(relationship, pluralized);  
     }   
 
