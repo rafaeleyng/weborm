@@ -663,10 +663,6 @@ var ModelJS = function(schema, config) {
 
     // create the inverse relationships
     for (var entity2 in this.Entity) {
-      // TODO remove this test and let it happen
-      if (entity2 === entity) {
-        continue; // haven't thought about self-relation yet
-      }
       var relationships2 = this.schema[entity2].relsToOne;
       // if 'entity2' has 'entity' as a relationship, create the 'entity2' in 'entity'
       if (relationships2 && relationships2.indexOf(entity) > -1) {
