@@ -89,6 +89,7 @@ var ModelJS = function(schema, config) {
 
       // add or replace the individual record
       localStorage.setItem(key, JSON.stringify(object));
+      return isAdding;
     };
 
     // delete
@@ -348,16 +349,58 @@ var ModelJS = function(schema, config) {
   };
   
   this._save = function(entity, filteredData) {
-    this.storage.save(entity, filteredData);
+    var isAdding = this.storage.save(entity, filteredData);
     var Constructor = this.Entity[entity];
     var record = new Constructor(filteredData);
     this._putInContext(entity, record);
+    
+    // insert the new object in the inverse relationship arrays
+    // debugger
+    if (isAdding) {
+      var inverseRelName = this._pluralize(entity);
+      for (var i in this.context) {
+        var ctxObj = this.context[i];
+        var inverseRelObjs = ctxObj[inverseRelName];
+        if (inverseRelObjs) {
+          if (ctxObj.id === record[this._lcFirst(ctxObj.class) + 'Id']) {
+            var alreadyInTheInverse = false;
+            for (var j in inverseRelObjs) {
+              if (inverseRelObjs[j].id === record.id) {
+                alreadyInTheInverse = true;
+                break;
+              }
+            }
+            if (!alreadyInTheInverse) {
+              inverseRelObjs.push(record);
+            }
+          }
+        }
+      }
+    }
+
     return record;
   };
   
   // delete
   this.delete = function(entity, id) {
     delete this.context[this._genKey(entity, id)];
+    // delete the deleted object in the inverse relationship arrays
+    // TODO add test to this
+    var inverseRelName = this._pluralize(entity);
+    for (var i  in this.context) {
+      var ctxObj = this.context[i];
+      var inverseRelObjs = ctxObj[inverseRelName];
+      if (inverseRelObjs) {
+        for (var j in inverseRelObjs) {
+          var inverseRelObj = inverseRelObjs[j];
+          if (inverseRelObj.id === id) {
+            var index = parseInt(j);
+            inverseRelObjs.splice(index,1);
+            break;
+          }
+        }
+      }
+    }
     this.storage.delete(entity, id);
   };
 
@@ -620,6 +663,7 @@ var ModelJS = function(schema, config) {
 
     // create the inverse relationships
     for (var entity2 in this.Entity) {
+      // TODO remove this test and let it happen
       if (entity2 === entity) {
         continue; // haven't thought about self-relation yet
       }
