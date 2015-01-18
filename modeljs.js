@@ -265,7 +265,19 @@ var ModelJS = function(schema, config) {
     return this.context[this._genKey(entity, data.id)];
   };
   this._putInContext = function(entity, object) {
-    this.context[this._genKey(entity, object.id)] = object;
+    var contextKey = this._genKey(entity, object.id);
+    if (this._contextContains(entity, object)) {
+      var attrsForEntity = this._attrsForEntity(entity);
+      for (var i in attrsForEntity) {
+        var attr = attrsForEntity[i];
+        if (attr === ID) {
+          continue;
+        }
+        this.context[contextKey][attr] = object[attr];
+      }
+    } else {
+      this.context[contextKey] = object;
+    }
     return object;
   };
   this._contextContains = function(entity, data) {
@@ -300,6 +312,7 @@ var ModelJS = function(schema, config) {
     return this.storage.count(entity);
   };
   this.find = function(entity, id) {
+    debugger
     var data = this.storage.find(entity, id);
     if (!data) {
       return undefined;
@@ -325,8 +338,13 @@ var ModelJS = function(schema, config) {
     return this._create(entity, this.storage.filter(entity, filterFunction));
   };
 
+  this.exists = function(entity, id) {
+    return this.find(entity, id) !== undefined;
+  };
+
   // insert / update
   this.save = function(entity, data) {
+    debugger
     // skip if entity is not in schema
     if (this.schema[entity] === undefined) {
       return;
@@ -338,6 +356,10 @@ var ModelJS = function(schema, config) {
       for (var i in filteredData) {
         if (!filteredData[i].id) {
           filteredData[i].id = this._genId(entity);
+        } else {
+          if (!this.exists(entity, filteredData[i].id)) {
+            filteredData[i].id = this._genId(entity);            
+          }
         }
         savedObjects.push(this._save(entity, filteredData[i]));
       }
@@ -345,7 +367,12 @@ var ModelJS = function(schema, config) {
     } else {
       if (!filteredData.id) {
         filteredData.id = this._genId(entity);
+      } else {
+        if (!this.exists(entity, filteredData.id)) {
+          filteredData.id = this._genId(entity);            
+        }
       }
+      debugger
       return this._save(entity, filteredData);
     }
   };
