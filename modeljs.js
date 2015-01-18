@@ -1,5 +1,4 @@
-'use strict';
-
+/*ModelJS v0.0.1 https://github.com/rafaeleyng/model-js*/
 var ModelJS = function(schema, config) {
 
   var self = this;
