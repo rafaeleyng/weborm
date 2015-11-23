@@ -4,15 +4,13 @@ ORM-like localStorage.
 
 Useful for prototyping your application and simulating your API responses.
 
-[Project page](http://rafaeleyng.github.io/weborm/).
-
 ## Docs
 
-[Get started](http://rafaeleyng.github.io/weborm/get-started.html) or read [the docs](http://rafaeleyng.github.io/weborm/docs.html).
+[Get started](/docs/get-started.md) or read [the docs](/docs/docs.md).
 
-## Example Application
+## Demo App
 
-See [the code](https://github.com/rafaeleyng/weborm-ex01) or try the [live application](http://rafaeleyng.github.io/weborm-ex01/).
+See [the code](/demo/js/app.js) or try the [live application](http://rafaeleyng.github.io/weborm/).
 
 ## License
 
