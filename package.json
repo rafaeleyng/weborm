@@ -1,0 +1,30 @@
+{
+  "name": "modeljs",
+  "version": "0.1.0",
+  "description": "ORM-like localStorage",
+  "main": "modeljs.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "aws-sdk": "2.1.6"
+  },
+  "scripts": {
+    "test": "mocha test/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafaeleyng/model-js.git"
+  },
+  "keywords": [
+    "localStorage",
+    "orm",
+    "model"
+  ],
+  "author": "Rafael Eyng <rafaeleyng@gmail.com> (https://github.com/rafaeleyng)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rafaeleyng/model-js/issues"
+  },
+  "homepage": "https://github.com/rafaeleyng/model-js#readme"
+}
