@@ -1,6 +1,6 @@
-describe('ModelJS self relationships', function() {
+describe('WebORM self relationships', function() {
 
-  var modelJS;
+  var weborm;
   var storage;
   var schema = {
     Node: {
@@ -10,33 +10,33 @@ describe('ModelJS self relationships', function() {
   };
   
   beforeEach(function() {
-    modelJS = new ModelJS(schema);
-    modelJS.storage.clean();
+    weborm = new WebORM(schema);
+    weborm.storage.clean();
   });
 
   afterAll(function() {
-    modelJS.storage.clean();
+    weborm.storage.clean();
   });
 
   it('should handle self relationships `to one`', function() {
-    var root = modelJS.save('Node', {content:'A'});
-    var child = modelJS.save('Node', {content:'B', _nodeId: root.id});
+    var root = weborm.save('Node', {content:'A'});
+    var child = weborm.save('Node', {content:'B', _nodeId: root.id});
 
     expect(child.Node).toEqual(root);
     expect(child.nodeId).toEqual(root.id);
   });
 
   it('should handle the inverse of self relationships `to one`', function() {
-    var root = modelJS.save('Node', {content:'A'});
+    var root = weborm.save('Node', {content:'A'});
     
     var numberOfRootChilds = 10;
     for (var i = 0; i < 10; i++) {
-      modelJS.save('Node', {content:'B' + i, _nodeId: root.id});
+      weborm.save('Node', {content:'B' + i, _nodeId: root.id});
     }
 
     expect(root.Nodes.length).toEqual(numberOfRootChilds);
 
-    modelJS.save('Node', {content:'C', _nodeId: root.Nodes[0].id});
+    weborm.save('Node', {content:'C', _nodeId: root.Nodes[0].id});
     expect(root.Nodes[0].Nodes.length).toEqual(1);
     expect(root.Nodes.length).toEqual(numberOfRootChilds);
   });

@@ -1,8 +1,8 @@
 {
-  "name": "modeljs",
+  "name": "weborm",
   "version": "0.1.0",
   "description": "ORM-like localStorage",
-  "main": "modeljs.js",
+  "main": "weborm.js",
   "directories": {
     "test": "test"
   },
@@ -14,17 +14,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rafaeleyng/model-js.git"
+    "url": "git+https://github.com/rafaeleyng/weborm.git"
   },
   "keywords": [
     "localStorage",
-    "orm",
-    "model"
+    "orm"
   ],
   "author": "Rafael Eyng <rafaeleyng@gmail.com> (https://github.com/rafaeleyng)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rafaeleyng/model-js/issues"
+    "url": "https://github.com/rafaeleyng/weborm/issues"
   },
-  "homepage": "https://github.com/rafaeleyng/model-js#readme"
+  "homepage": "https://github.com/rafaeleyng/weborm#readme"
 }

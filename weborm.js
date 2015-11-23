@@ -1,5 +1,5 @@
-/*ModelJS v0.1.0 https://github.com/rafaeleyng/model-js*/
-var ModelJS = function(schema, config) {
+/* WebORM v0.1.0 https://github.com/rafaeleyng/weborm */
+var WebORM = function(schema, config) {
 
   var self = this;
   var ID = 'id';
@@ -168,7 +168,7 @@ var ModelJS = function(schema, config) {
   };
 
   /*
-    ModelJS
+    WebORM
   */
 
   // CONFIG
@@ -185,7 +185,7 @@ var ModelJS = function(schema, config) {
   // non-configurable defaults
   this.config.base = '_Base';
   this.config.defaultBase = '_DefaultBase';
-  schema[this.config.defaultBase] = new ModelJS.SchemaEntity([ID]);
+  schema[this.config.defaultBase] = new WebORM.SchemaEntity([ID]);
 
   this.storage = new LocalStorage();
 
@@ -228,7 +228,7 @@ var ModelJS = function(schema, config) {
   };
 
   // CONTEXT
-  // holds ModelJSEntity objects (not plain JS objects)
+  // holds WebORMEntity objects (not plain JS objects)
   this.context = {};
 
   this._getFromContext = function(entity, data) {
@@ -253,7 +253,7 @@ var ModelJS = function(schema, config) {
   this._contextContains = function(entity, data) {
     return this.context[entity + '_' + data.id] !== undefined;
   };
-  // returns one or an array of ModelJSEntity objects with the correct entity type
+  // returns one or an array of WebORMEntity objects with the correct entity type
   this._create = function(entity, data) {
     data = data || {};
     if (this._isCollection(data)) {
@@ -665,7 +665,7 @@ var ModelJS = function(schema, config) {
   }
 };
 
-ModelJS.SchemaEntity = function(attrs, relsToOne, relsToMany) {
+WebORM.SchemaEntity = function(attrs, relsToOne, relsToMany) {
   this.attrs = attrs || [];
   this.relsToOne = relsToOne || [];
   this.relsToMany = relsToMany || [];

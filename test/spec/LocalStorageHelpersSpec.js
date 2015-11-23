@@ -1,7 +1,7 @@
 describe('LocalStorage Helpers', function() {
 
 
-  var modelJS;
+  var weborm;
   var storage;
   var schema = {
     _Base: { 
@@ -18,8 +18,8 @@ describe('LocalStorage Helpers', function() {
   };
 
   beforeEach(function() {
-    modelJS = new ModelJS(schema, config);
-    storage = modelJS.storage;
+    weborm = new WebORM(schema, config);
+    storage = weborm.storage;
     storage.clean();
   });
 

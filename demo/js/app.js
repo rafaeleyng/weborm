@@ -1,19 +1,19 @@
-// ModelJS
-var modeljs = (function() {
+// WebORM
+var weborm = (function() {
   var schema = {
     // common to all entities:
-    _Base: { 
+    _Base: {
       attrs: ['name']
     },
-    // entities:  
-    Country: { 
+    // entities:
+    Country: {
       attrs: ['abbr']
     },
-    State: { 
-      attrs: ['abbr'], 
+    State: {
+      attrs: ['abbr'],
       relsToOne: ['Country']
     },
-    City: { 
+    City: {
       relsToOne: ['State']
     }
   };
@@ -23,30 +23,30 @@ var modeljs = (function() {
       City: 'Cities'
     }
   };
-  return new ModelJS(schema, config);
+  return new WebORM(schema, config);
 })();
 
 var helpers = {
   cleanStorage: function() {
-    modeljs.storage.clean();
+    weborm.storage.clean();
     console.log(localStorage.length);
   },
 
   insertData: function() {
-    var br = modeljs.save('Country', {name: 'Brazil', abbr: 'BR'});
-    var rs = modeljs.save('State', {name: 'Rio Grande do Sul', abbr: 'RS', _countryId: br.id});
-    var sc = modeljs.save('State', {name: 'Santa Catarina', abbr: 'SC', _countryId: br.id});
-    var feliz = modeljs.save('City', {name: 'Feliz', _stateId: rs.id});
-    var poa = modeljs.save('City', {name: 'Porto Alegre', _stateId: rs.id});
-    var floripa = modeljs.save('City', {name: 'Florianópolis', _stateId: sc.id});
-    var garopaba = modeljs.save('City', {name: 'Garopaba', _stateId: sc.id});
+    var br = weborm.save('Country', {name: 'Brazil', abbr: 'BR'});
+    var rs = weborm.save('State', {name: 'Rio Grande do Sul', abbr: 'RS', _countryId: br.id});
+    var sc = weborm.save('State', {name: 'Santa Catarina', abbr: 'SC', _countryId: br.id});
+    var feliz = weborm.save('City', {name: 'Feliz', _stateId: rs.id});
+    var poa = weborm.save('City', {name: 'Porto Alegre', _stateId: rs.id});
+    var floripa = weborm.save('City', {name: 'Florianópolis', _stateId: sc.id});
+    var garopaba = weborm.save('City', {name: 'Garopaba', _stateId: sc.id});
 
-    var us = modeljs.save('Country', {name: 'United States', abbr: 'US'});
-    var ny = modeljs.save('State', {name: 'New York', abbr: 'NY', _countryId: us.id});
-    var ca = modeljs.save('State', {name: 'California', abbr: 'CA', _countryId: us.id});
-    var nyc = modeljs.save('City', {name: 'New York', _stateId: ny.id});
-    var la = modeljs.save('City', {name: 'Los Angeles', _stateId: ca.id});
-    var sf = modeljs.save('City', {name: 'San Francisco', _stateId: ca.id});
+    var us = weborm.save('Country', {name: 'United States', abbr: 'US'});
+    var ny = weborm.save('State', {name: 'New York', abbr: 'NY', _countryId: us.id});
+    var ca = weborm.save('State', {name: 'California', abbr: 'CA', _countryId: us.id});
+    var nyc = weborm.save('City', {name: 'New York', _stateId: ny.id});
+    var la = weborm.save('City', {name: 'Los Angeles', _stateId: ca.id});
+    var sf = weborm.save('City', {name: 'San Francisco', _stateId: ca.id});
   },
   reset: function() {
     helpers.cleanStorage();
@@ -59,12 +59,12 @@ if (localStorage.length === 0) {
 }
 
 // AngularJS
-var app = angular.module('modeljs-ex-01', []);
+var app = angular.module('weborm-demo', []);
 
 app.service('dataService', function() {
   this.getCountries = function() {
     // mocked call to your API or whatever
-    return modeljs.all('Country');
+    return weborm.all('Country');
   };
 });
 
@@ -145,27 +145,27 @@ app.controller('mainCtrl', ['$scope', 'dataService', function($scope, dataServic
   };
 
   $scope.newCountry = function() {
-    modeljs.save('Country', {name: 'New country ' + modeljs.count('Country'), abbr: 'Abbr'});
+    weborm.save('Country', {name: 'New country ' + weborm.count('Country'), abbr: 'Abbr'});
     $scope.loadCountries();
     $scope.selectLastCountry();
     $scope.newState();
   };
 
   $scope.newState = function() {
-    modeljs.save('State', {name: 'New state ' + modeljs.count('State'), abbr: 'Abbr', _countryId: $scope.selectedCountry.id});
+    weborm.save('State', {name: 'New state ' + weborm.count('State'), abbr: 'Abbr', _countryId: $scope.selectedCountry.id});
     $scope.selectLastState();
     $scope.newCity();
   };
 
   $scope.newCity = function() {
-    modeljs.save('City', {name: 'New city ' + modeljs.count('City'), _stateId: $scope.selectedState.id});
+    weborm.save('City', {name: 'New city ' + weborm.count('City'), _stateId: $scope.selectedState.id});
     $scope.selectLastCity();
   };
 
   $scope.deleteCountry = function() {
-    if ($scope.selectedCountry) {   
+    if ($scope.selectedCountry) {
       $scope.selectedCountry.delete();
-      // remove the country from the local array. this is done by modeljs in the inverse relationship arrays
+      // remove the country from the local array. this is done by weborm in the inverse relationship arrays
       $scope.countries.splice($scope.countries.indexOf($scope.selectedCountry), 1);
       $scope.selectFirstCountry();
     }
@@ -174,19 +174,19 @@ app.controller('mainCtrl', ['$scope', 'dataService', function($scope, dataServic
   $scope.deleteState = function() {
     if ($scope.selectedState) {
       $scope.selectedState.delete();
-      $scope.selectFirstState();      
+      $scope.selectFirstState();
     }
   };
 
   $scope.deleteCity = function() {
     if ($scope.selectedCity) {
       $scope.selectedCity.delete();
-      $scope.selectFirstCity();     
+      $scope.selectFirstCity();
     }
   };
 
   $scope.loadCountries = function() {
-    $scope.countries = dataService.getCountries();    
+    $scope.countries = dataService.getCountries();
   }
 
   var init = function() {

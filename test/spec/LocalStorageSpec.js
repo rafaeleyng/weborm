@@ -3,7 +3,7 @@ describe('LocalStorage', function() {
   var ENTITY = 'Country';
   var ID = 1;
 
-  var modelJS;
+  var weborm;
   var storage;
   var schema = {
     _Base: { 
@@ -20,8 +20,8 @@ describe('LocalStorage', function() {
   };
 
   beforeEach(function() {
-    modelJS = new ModelJS(schema, config);
-    storage = modelJS.storage;
+    weborm = new WebORM(schema, config);
+    storage = weborm.storage;
     storage.clean();
   });
 
