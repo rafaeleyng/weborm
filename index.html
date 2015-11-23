@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ModelJS Demo</title>
+  <link rel="stylesheet" href="demo/css/vendor/bootstrap.min.css">
+</head>
+<body ng-app="modeljs-ex-01" ng-controller="mainCtrl">
+
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://rafaeleyng.github.io/model-js/">ModelJS</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="https://github.com/rafaeleyng/model-js">GitHub</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+  <div class="main" style="margin-top: 100px;">
+    <div class="container">
+
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <h1 class="text-center">ModelJS Demo</h1>
+          <h3 class="text-center">Edit, save and reload the page. Everything is stored in your browser!</h3>
+          <p class="text-center">This is a sample of how you can use ModelJS to work with ORM-like localStorage, to prototype your application while your API is not ready. Check
+            <a href="http://rafaeleyng.github.io/model-js/docs.html">the docs</a> or
+            <a href="http://rafaeleyng.github.io/model-js/get-started.html">get started</a>.</p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 50px;">
+
+        <div class="col-xs-4">
+          <label for="countries">Countries</label>
+          <select id="countries" class="form-control" ng-options="nameAndAbbr(country) for country in countries"
+                  ng-model="selectedCountry"
+                  ng-change="changeCountry()"
+                  >
+          </select>
+        </div>
+
+        <div class="col-xs-4">
+          <label for="states">States</label>
+          <select id="states" class="form-control" ng-options="nameAndAbbr(state) for state in selectedCountry.States"
+                  ng-model="selectedState"
+                  ng-change="changeState()"
+                  >
+          </select>
+        </div>
+
+        <div class="col-xs-4">
+          <label for="cities">Cities</label>
+          <select id="cities" class="form-control" ng-options="city.name for city in selectedState.Cities"
+                  ng-model="selectedCity"
+                  >
+          </select>
+        </div>
+
+      </div>
+
+      <div class="row" style="margin-top: 30px;">
+
+        <div class="col-xs-4">
+          <form>
+            <div class="form-group">
+              <label for="countryName">Country name</label>
+              <input type="text" class="form-control" id="countryName" placeholder="Country name"
+                ng-model="selectedCountry.name">
+            </div>
+            <div class="form-group">
+              <label for="countryAbbr">Country abbreviation</label>
+              <input type="text" class="form-control" id="countryAbbr" placeholder="Country abbr."
+                ng-model="selectedCountry.abbr">
+            </div>
+          </form>
+          <button class="btn btn-primary" ng-click="saveCountry()">Save</button>
+          <button class="btn btn-success" ng-click="newCountry()">New</button>
+          <button class="btn btn-danger" ng-click="deleteCountry()">Delete</button>
+        </div>
+
+        <div class="col-xs-4">
+          <form>
+            <div class="form-group">
+              <label for="stateName">State name</label>
+              <input type="text" class="form-control" id="stateName" placeholder="State name"
+                ng-model="selectedState.name">
+            </div>
+            <div class="form-group">
+              <label for="stateAbbr">State abbreviation</label>
+              <input type="text" class="form-control" id="stateAbbr" placeholder="State abbr."
+                ng-model="selectedState.abbr">
+            </div>
+          </form>
+          <button class="btn btn-primary" ng-click="saveState()">Save</button>
+          <button class="btn btn-success" ng-click="newState()">New</button>
+          <button class="btn btn-danger" ng-click="deleteState()">Delete</button>
+        </div>
+
+        <div class="col-xs-4">
+          <form action="">
+            <div class="form-group">
+              <label for="cityName">City name</label>
+              <input type="text" class="form-control" id="cityName" placeholder="City name"
+                ng-model="selectedCity.name">
+            </div>
+          </form>
+          <button class="btn btn-primary" ng-click="saveCity()">Save</button>
+          <button class="btn btn-success" ng-click="newCity()">New</button>
+          <button class="btn btn-danger" ng-click="deleteCity()">Delete</button>
+        </div>
+
+      </div>
+
+      <div class="row" style="margin-top: 30px;">
+        <div class="col-xs-4">
+          <button class="btn btn-danger" onclick="helpers.reset()">Reset all</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin: 30px 0;">
+        <div class="col-sm-offset-3 col-sm-6">
+          <h4>The schema used in this sample app is defined by the code:</h4>
+          <pre>
+var schema = {
+  _Base: {
+    attrs: ['name']
+  },
+  Country: {
+    attrs: ['abbr']
+  },
+  State: {
+    attrs: ['abbr'],
+    relsToOne: ['Country']
+  },
+  City: {
+    relsToOne: ['State']
+  }
+};
+          </pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="./demo/js/vendor/angular.min.js"></script>
+  <script src="./modeljs.js"></script>
+  <script src="./demo/js/app.js"></script>
+</body>
+</html>
