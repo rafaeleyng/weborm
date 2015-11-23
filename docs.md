@@ -6,11 +6,10 @@
 
 ### `ModelJS(schema, config)`
 ModelJS constructor.
-* `schema`: { }. 
+* `schema`: { }.
   * Keys are entity names and values are SchemaEntity objects.
 * `config`: { }.
   * Valid keys and values:
-    * `storage`: `'localStorage'`, `'indexedDB'`, `'webSQL'`. **Only `'localStorage'` is currently supported** and is the default value.
     * `pluralization`: object where keys are entity names and values are how you want them pluralized, if they don't follow the pattern of just adding an 's' at the end of the word.
 
 **Returns:** The ModelJS object.
@@ -123,4 +122,3 @@ Saves an object to the storage. Equivalent to `modeljs.save(entity, modeljsEntit
 
 ### `modeljsEntity.delete()`
 Deletes an object from the storage. Equivalent to `modeljs.delete(entity, modeljsEntity.id)`. Only makes sense for an already existing ModelJSEntity object, which is returned by `modeljs.save(...)` or by one of `modeljs` retrieval methods.
-

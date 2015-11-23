@@ -10,18 +10,18 @@ Using plain JavaScript objects:
 
 ```
 var schema = {
-  _Base: { 
+  _Base: {
     attrs: ['name'],
   },
-  
+
   Game: {},
-  
-  Player: { 
+
+  Player: {
     attrs: ['score'],
     relsToOne: ['Game'],
     relsToMany: ['Badge']
   },
-  
+
   Badge: {
     attrs: ['description']
   }
@@ -57,15 +57,12 @@ Note that defining a `_Base` won't have any impact on the `_DefaultBase`. So **y
 
 ## Config
 
-You can, optionally, pass a configuration object. Currently, there are two possible configurations:
-
-* `storage`: defines the storage mechanism you want to use. This defaults to `'localStorage'`. The other valid values are `'webSQL'` and `'indexedDB'`, but **there is no support for them** right now.
+You can, optionally, pass a configuration object. Currently, there are only one possible configuration:
 
 * `pluralization`: ModelJS pluralizes entity names by just adding an 's' at the end of the word. If you want to have a correct pluralization for your entity names, you should pass everything that doesn't follow this pattern.
 
 ```
 var config = {
-  storage: 'localStorage', // no need to pass it, is the default
   pluralization: {
     Country: 'Countries',
     City: 'Cities'
@@ -147,9 +144,9 @@ You can set a relationship when creating a new object:
 
 ```
 var brazil = modeljs.save('Country', {name: 'Brazil'});
-var rs = modeljs.save('State', 
+var rs = modeljs.save('State',
   {
-    name: 'Rio Grande do Sul', 
+    name: 'Rio Grande do Sul',
     _countryId: brazil.id
   }
 );
