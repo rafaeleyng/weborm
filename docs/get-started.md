@@ -1,7 +1,5 @@
 # Get Started With WebORM
 
-[WebORM on GitHub](https://github.com/rafaeleyng/weborm)
-
 ## Schema
 
 You must define a schema in order to work with WebORM. There are 2 ways to define your schema: using a plain JavaScript objects or using the `WebORM.SchemaEntity` constructor.

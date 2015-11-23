@@ -1,7 +1,5 @@
 # WebORM Docs
 
-[WebORM on GitHub](https://github.com/rafaeleyng/weborm)
-
 ## WebORM constructor reference
 
 ### `WebORM(schema, config)`
