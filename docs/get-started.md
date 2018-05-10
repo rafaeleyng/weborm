@@ -128,7 +128,7 @@ var page1 = weborm.page('Person', 0, 10); // page number, page size
 Allows you to perform more complex queries
 
 ```
-var rafaelDev = modljs.filter('Person', function(record) {
+var rafaelDev = weborm.filter('Person', function(record) {
   return record.name === 'Rafael' && record.profession.toLowerCase() === 'dev';
 });
 ```
